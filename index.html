@@ -3,81 +3,1065 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>禾芒新屿应用商店</title>
- <script src="js/supabase.min.js"></script>
-<script src="js/jszip.min.js"></script>
-   <!-- 在 <head> 部分添加这行代码 -->
-<link rel="stylesheet" href="styles.css">
+    <title>禾芒新屿表盘商店</title>
+    <script src="js/supabase.min.js"></script>
+    <script src="js/jszip.min.js"></script>
+    <style>
+        /* 基本样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            line-height: 1.5;
+            padding-bottom: 70px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        /* 页面样式 */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-top: 10px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #86868b;
+            font-size: 16px;
+        }
+        
+        /* 工具栏样式 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 500px;
+        }
+        
+        #search-input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        #search-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #86868b;
+            font-size: 18px;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .view-btn {
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 18px;
+        }
+        
+        .view-btn.active {
+            background-color: #007aff;
+            color: white;
+        }
+        
+        .view-btn:hover {
+            background-color: #f5f5f7;
+        }
+        
+        .view-btn.active:hover {
+            background-color: #007aff;
+        }
+        
+        /* 公告栏样式 */
+        .announcement-bar {
+            background-color: #f5f5f7;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 25px;
+            border-left: 4px solid #007aff;
+        }
+        
+        .announcement-bar p {
+            color: #515154;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* 应用列表容器 */
+        .apps-container {
+            margin-bottom: 30px;
+        }
+        
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            padding: 5px;
+        }
+        
+        .app-list {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* 修复视图切换：添加明确的显示/隐藏控制 */
+        .app-grid:not(.active) {
+            display: none;
+        }
+        
+        .app-list:not(.active) {
+            display: none;
+        }
+        
+        .app-grid.active {
+            display: grid;
+        }
+        
+        .app-list.active {
+            display: flex;
+        }
+        
+        /* 应用卡片样式 */
+        .app-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            border: 1px solid transparent;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #007aff;
+        }
+        
+        .app-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 22px;
+            object-fit: cover;
+            margin-bottom: 15px;
+            background-color: #f5f5f7;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .app-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 42px;
+        }
+        
+        .app-meta {
+            color: #86868b;
+            font-size: 13px;
+            margin-top: auto;
+            width: 100%;
+        }
+        
+        /* 列表视图样式 */
+        .app-list-item {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            border: 1px solid transparent;
+        }
+        
+        .app-list-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #007aff;
+        }
+        
+        .app-list-item .app-icon {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 0;
+        }
+        
+        .app-list-item .app-info {
+            flex: 1;
+            text-align: left;
+            min-width: 0; /* 防止内容溢出 */
+        }
+        
+        .app-list-item .app-name {
+            font-size: 18px;
+            margin-bottom: 6px;
+            height: auto;
+        }
+        
+        .app-list-item .app-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .app-list-item .app-description {
+            color: #515154;
+            font-size: 14px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+            background: white;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .page-btn:hover:not(:disabled) {
+            background-color: #f5f5f7;
+            border-color: #86868b;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .page-numbers {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .page-number {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+        
+        .page-number:hover:not(.active) {
+            background-color: #f5f5f7;
+        }
+        
+        .page-number.active {
+            background-color: #007aff;
+            color: white;
+        }
+        
+        /* 应用详情弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 30px;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #86868b;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .modal-close:hover {
+            background-color: #f5f5f7;
+        }
+        
+        .detail-section {
+            margin-bottom: 25px;
+        }
+        
+        .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background-color: #007aff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056cc;
+        }
+        
+        .btn-secondary {
+            background-color: #f2f2f7;
+            color: #1d1d1f;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e5e5ea;
+        }
+        
+        .btn-success {
+            background-color: #34c759;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #2aa44f;
+        }
+        
+        .btn-danger {
+            background-color: #ff3b30;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d70015;
+        }
+        
+        /* 底部导航栏 */
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid #d2d2d7;
+            z-index: 100;
+            padding: 10px 0;
+        }
+        
+        .nav-list {
+            display: flex;
+            justify-content: space-around;
+            list-style: none;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #86868b;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link.active {
+            color: #007aff;
+        }
+        
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-link span:last-child {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background-color: #f5f5f7;
+        }
+        
+        /* 提示消息样式 */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9998;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            min-width: 250px;
+            max-width: 350px;
+            font-size: 15px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid #007aff;
+        }
+        
+        .toast.success {
+            border-left-color: #34c759;
+        }
+        
+        .toast.error {
+            border-left-color: #ff3b30;
+        }
+        
+        .toast.warning {
+            border-left-color: #ff9500;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* 我的页面样式 */
+        .user-header {
+            text-align: center;
+            padding: 30px 20px 20px;
+            background: linear-gradient(135deg, #007aff, #5856d6);
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.2);
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-header h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .auth-buttons .btn {
+            min-width: 120px;
+        }
+        
+        /* 用户功能列表 */
+        .feature-list {
+            list-style: none;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f2f2f7;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-item:hover {
+            background-color: #f9f9fb;
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .feature-item span:last-child {
+            font-size: 17px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+        
+        /* 上传页面样式 */
+        .upload-form {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .upload-form h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #1d1d1f;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .help-text {
+            font-size: 13px;
+            color: #86868b;
+            margin-top: 6px;
+        }
+        
+        .upload-preview {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #d2d2d7;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            background-color: #f9f9fb;
+        }
+        
+        .upload-preview img {
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .upload-preview p {
+            color: #86868b;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        /* 认证对话框样式 */
+        .dialog-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+        
+        .auth-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            z-index: 10000;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        .auth-dialog h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #1d1d1f;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .auth-form input {
+            padding: 14px 16px;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .auth-form input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
+        .auth-form .btn {
+            margin-top: 10px;
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-top: -10px;
+        }
+        
+        .forgot-password a {
+            color: #007aff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .password-hint {
+            font-size: 12px;
+            color: #86868b;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+            
+            .app-card {
+                padding: 18px;
+            }
+            
+            .app-icon {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .app-name {
+                font-size: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .app-list-item {
+                padding: 18px;
+                gap: 15px;
+            }
+            
+            .app-list-item .app-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .app-list-item .app-meta {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .auth-dialog {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            
+            .upload-form {
+                padding: 20px;
+            }
+            
+            .user-header {
+                padding: 25px 15px 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .app-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                max-width: 100%;
+            }
+            
+            .view-toggle {
+                align-self: flex-end;
+            }
+            
+            .app-list-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .app-list-item .app-info {
+                text-align: center;
+            }
+            
+            .app-list-item .app-meta {
+                justify-content: center;
+            }
+            
+            .auth-buttons {
+                flex-direction: column;
+            }
+            
+            .auth-buttons .btn {
+                width: 100%;
+            }
+        }
+        
+        /* 空状态样式 */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        
+        /* 搜索统计 */
+        .search-stats {
+            margin-bottom: 20px;
+            color: #515154;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        /* 更新日期 */
+        .update-time {
+            text-align: center;
+            font-size: 12px;
+            color: #86868b;
+            margin-top: 8px;
+        }
+        
+        /* 文件上传按钮 */
+        .file-upload-btn {
+            display: inline-block;
+            background-color: #f2f2f7;
+            border: 2px dashed #d2d2d7;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .file-upload-btn:hover {
+            background-color: #e5e5ea;
+            border-color: #007aff;
+        }
+        
+        .file-upload-btn span {
+            color: #007aff;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <!-- 首页 -->
         <div class="page active" id="home-page">
             <header class="header">
-                <h1>禾芒新屿应用商店</h1>
-                <p>让下载不再繁琐</p>
+                <h1>禾芒新屿表盘商店</h1>
+                <p>发现精彩表盘，个性化你的设备</p>
             </header>
 
-            <!-- 公告栏 -->
-            <div class="announcement-bar">
-                <!--p>应用表盘下载无需登录，如需登录上传rpk请联系Justliuil以注册账号•最新支持上传自定义图标，最新支持上传表盘文件</p-->
+            <!-- 搜索和视图切换工具栏 -->
+            <div class="toolbar">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="搜索表盘名称、作者或描述...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid" title="方格视图">
+                        <span>🗏</span>
+                    </button>
+                    <button class="view-btn" data-view="list" title="列表视图">
+                        <span>📑</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="app-grid" id="app-list"></div>
-        </div>
+            <!-- 搜索结果统计 -->
+            <div class="search-stats" id="search-stats">
+                正在加载表盘数据...
+            </div>
 
+            <!-- 应用列表容器 -->
+            <div class="apps-container">
+                <div class="app-grid active" id="app-grid-view">
+                    <!-- 方格视图内容 -->
+                </div>
+                <div class="app-list" id="app-list-view">
+                    <!-- 列表视图内容 -->
+                </div>
+            </div>
+
+            <!-- 分页控件 -->
+            <div class="pagination" id="pagination">
+                <button class="page-btn" id="prev-page">上一页</button>
+                <div class="page-numbers" id="page-numbers"></div>
+                <button class="page-btn" id="next-page">下一页</button>
+            </div>
+        </div>
+        
         <!-- 我的页面 -->
         <div class="page" id="profile-page">
             <div class="user-header">
                 <div class="user-avatar">👤</div>
                 <h3 id="user-name">我的空间</h3>
-                <div id="login-section">
-                    <button class="btn btn-primary login-btn" id="signup-btn">注册</button>
-                    <button class="btn btn-primary login-btn" id="login-btn">登录</button>
-                    <button class="btn btn-primary login-btn" id="logout-btn" style="display:none;">退出登录</button>
+                <div id="auth-buttons" class="auth-buttons">
+                    <button class="btn btn-primary" id="signup-btn">注册</button>
+                    <button class="btn btn-secondary" id="login-btn">登录</button>
+                    <button class="btn btn-danger" id="logout-btn" style="display:none;">退出登录</button>
                 </div>
             </div>
+            
             <div id="user-features">
                 <ul class="feature-list">
                     <li class="feature-item" id="upload-feature">
                         <span class="feature-icon">📤</span>
-                        <span>上传应用或表盘文件</span>
-                        <input type="file" id="file-input" accept=".rpk" multiple="false" style="display: none;">
+                        <span>上传表盘文件</span>
                     </li>
                     <li class="feature-item" id="my-apps-feature">
                         <span class="feature-icon">📱</span>
-                        <span>我的应用或表盘</span>
-                    </li>
-                    <li class="feature-item" id="favorites-feature">
-                        <span class="feature-icon">⭐️</span>
-                        <span>我的收藏</span>
+                        <span>我的表盘</span>
                     </li>
                 </ul>
+                
                 <!-- 联系按钮 -->
                 <ul class="feature-list" style="margin-top: 30px; padding-bottom: 100px;">
                     <li class="feature-item" style="justify-content: center; cursor: pointer;">
-                        <a href="https://qm.qq.com/q/MkzRaG2YoM" class="btn btn-primary login-btn" target="_blank" style="margin: 0; width: auto; display: inline-flex; align-items: center; justify-content: center;">
-                            <span style="margin-right: 8px;">👨‍💻</span>点击链接加入群聊【【Blue OS】发烧友聚集地】：
+                        <a href="https://qm.qq.com/q/MkzRaG2YoM" class="btn btn-primary" target="_blank" style="margin: 0; width: auto; display: inline-flex; align-items: center; justify-content: center;">
+                            <span style="margin-right: 8px;">👨‍💻</span>点击链接加入群聊【【Blue OS】发烧友聚集地】
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
-
+        
         <!-- 上传页面 -->
         <div class="page" id="upload-page">
             <div class="upload-form">
-                <h2>上传应用或表盘文件</h2>
+                <h2>上传表盘文件</h2>
                 <div class="form-group">
                     <label for="app-file">选择.rpk文件（选择后自动填充以下信息）</label>
-                    <input type="file" id="app-file" accept=".rpk" multiple="false">
+                    <div class="file-upload-btn" onclick="document.getElementById('app-file').click()">
+                        <span>点击选择.rpk文件</span>
+                    </div>
+                    <input type="file" id="app-file" accept=".rpk" multiple="false" style="display: none;">
                 </div>
                 <div class="form-group">
-                    <label for="app-name">应用名称</label>
-                    <input type="text" id="app-name" placeholder="请输入应用名称">
+                    <label for="app-name">表盘名称</label>
+                    <input type="text" id="app-name" placeholder="请输入表盘名称">
                 </div>
                 <div class="form-group">
-                    <label for="app-package">包名 (如: com.example.app)</label>
+                    <label for="app-package">包名 (如: com.example.watchface)</label>
                     <input type="text" id="app-package" placeholder="请输入包名">
                 </div>
                 <div class="form-group">
@@ -85,57 +1069,37 @@
                     <input type="text" id="app-version" placeholder="请输入版本号">
                 </div>
                 <div class="form-group">
-                    <label for="app-description">应用描述（请自行填写）</label>
-                    <textarea id="app-description" placeholder="请输入应用描述"></textarea>
+                    <label for="app-description">表盘描述</label>
+                    <textarea id="app-description" placeholder="请输入表盘描述"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="app-author">应用作者</label>
-                    <input type="text" id="app-author" placeholder="请输入应用作者名称">
+                    <label for="app-author">表盘作者</label>
+                    <input type="text" id="app-author" placeholder="请输入表盘作者名称">
                 </div>
                 <div class="form-group">
-                    <label for="app-icon">自定义图标 (未选将使用包内图标.studio1.1.1以上无图标)</label>
-                    <input type="file" id="app-icon" accept=".png,.jpg,.jpeg,.gif" multiple="false">
-                    <p class="help-text">上传PNG、JPG或GIF格式的图片作为应用图标</p>
+                    <label for="app-icon">自定义图标 (可选)</label>
+                    <div class="file-upload-btn" onclick="document.getElementById('app-icon').click()">
+                        <span>点击选择图标文件 (PNG/JPG)</span>
+                    </div>
+                    <input type="file" id="app-icon" accept=".png,.jpg,.jpeg" multiple="false" style="display: none;">
+                    <p class="help-text">上传PNG或JPG格式的图片作为表盘图标，若不选择将使用包内图标</p>
                 </div>
                 <div class="upload-preview" id="upload-preview">
-                    <p>图标预览将在这里显示</p>
+                    <p>表盘预览将在这里显示</p>
                 </div>
-                <button class="btn btn-primary" id="submit-upload">提交上传</button>
+                <button class="btn btn-primary" id="submit-upload" style="width: 100%; padding: 16px; font-size: 17px;">提交上传</button>
             </div>
         </div>
-
-        <!-- 我的应用页面 -->
+        
+        <!-- 我的表盘页面 -->
         <div class="page" id="my-apps-page">
-            <h2>我的应用</h2>
-            <div class="app-grid" id="my-apps-list"></div>
-        </div>
-
-        <!-- 收藏页面 -->
-        <div class="page" id="favorites-page">
-            <h2>我的收藏</h2>
-            <div class="app-grid" id="favorites-list"></div>
-        </div>
-
-        <!-- 发现页面 -->
-        <div class="page" id="discover-page">
             <header class="header">
-                <h1>发现</h1>
+                <h1>我的表盘</h1>
+                <p>查看和管理您上传的表盘</p>
             </header>
-            <div class="discover-tabs">
-                <button class="tab-btn active" data-tab="hot">热门表盘</button>
-                <button class="tab-btn" data-tab="new">最新发布</button>
-                <button class="tab-btn" data-tab="trending">上升最快</button>
-            </div>
-            <div class="discover-content">
-                <div id="hot-content" class="tab-content active">
-                    <div class="app-grid" id="hot-apps-list"></div>
-                </div>
-                <div id="new-content" class="tab-content">
-                    <div class="app-grid" id="new-apps-list"></div>
-                </div>
-                <div id="trending-content" class="tab-content">
-                    <div class="app-grid" id="trending-apps-list"></div>
-                </div>
+            
+            <div class="app-grid" id="my-apps-list">
+                <!-- 我的表盘列表 -->
             </div>
         </div>
     </div>
@@ -145,14 +1109,14 @@
         <ul class="nav-list">
             <li class="nav-item">
                 <a href="#home" class="nav-link active" data-page="home-page">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon">🗏</span>
                     <span>首页</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#discover" class="nav-link" data-page="discover-page">
-                    <span class="nav-icon">✨</span>
-                    <span>发现</span>
+                <a href="https://qm.qq.com/q/MkzRaG2YoM" class="nav-link" target="_blank">
+                    <span class="nav-icon">👨‍💻</span>
+                    <span>加入群聊</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -164,7 +1128,7 @@
         </ul>
         <!-- 最后更新时间 -->
         <div class="update-time">
-            <p>最后更新时间: 2026年2月2日</p>
+            <p>最后更新时间: <span id="current-date"></span></p>
         </div>
     </nav>
 
@@ -179,15 +1143,10 @@
     <!-- 全局提示容器 -->
     <div id="toast-container"></div>
 
-    <!-- 加载中提示 -->
-    <div id="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">加载中...</div>
-    </div>
-
-    <!-- 登录注册对话框 -->
+    <!-- 认证对话框背景 -->
     <div class="dialog-backdrop" id="auth-backdrop"></div>
 
+    <!-- 登录对话框 -->
     <div class="auth-dialog" id="login-dialog">
         <h3>登录</h3>
         <form class="auth-form" id="login-form">
@@ -200,19 +1159,21 @@
         </form>
     </div>
 
+    <!-- 注册对话框 -->
     <div class="auth-dialog" id="signup-dialog">
         <h3>注册</h3>
         <form class="auth-form" id="signup-form">
             <input type="email" id="signup-email" placeholder="邮箱" required>
             <input type="password" id="signup-password" placeholder="密码" required>
-            <div class="password-hint" style="font-size:12px;color:#666;margin:-10px 0 10px">
-                密码必须包含大小写字母和数字
+            <div class="password-hint">
+                密码必须包含大小写字母和数字，至少8个字符
             </div>
             <input type="password" id="signup-password-confirm" placeholder="确认密码" required>
             <button type="submit" class="btn btn-primary">注册</button>
         </form>
     </div>
 
+    <!-- 重置密码对话框 -->
     <div class="auth-dialog" id="reset-password-dialog">
         <h3>重置密码</h3>
         <form class="auth-form" id="reset-password-form">
@@ -220,7 +1181,15 @@
             <button type="submit" class="btn btn-primary">发送重置链接</button>
         </form>
     </div>
+
     <script>
+    // 设置当前日期
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
     // Supabase 配置
     const SUPABASE = {
         URL: 'https://ogpznrnpldszxxwizfbp.supabase.co',
@@ -234,26 +1203,31 @@
 
     // 状态管理
     let appsData = [];
-    let favorites = [];
     let myApps = [];
-    let selectedFile = null;
     let currentUser = null;
+    
+    // 分页和搜索状态
+    let currentView = 'grid'; // 'grid' 或 'list'
+    let currentPage = 1;
+    let itemsPerPage = 24;
+    let filteredApps = [];
+    let searchTimeout = null;
 
     // 配置
     const CONFIG = {
-        defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBhY2thZ2UiPjxwYXRoIGQ9Ik0xNi41IDkuNGwtOS01LjE5QTIgMiAwIDAgMCA1LjY5IDRjLS40OC4wMS0uODYuMzktLjg3Ljg3djE0LjI1YzAgLjQ4LjM5Ljg3Ljg3Ljg3LjE1IDAgLjMtLjA0LjQ0LS4xMmw5LjA1LTUuMThjLjQxLS4yMy42NC0uNjcuNjQtMS4xM3YtMy4zYzAtLjQ2LS4yMy0uOS0uNjQtMS4xMnoiLz48cGF0aCBkPSJNOS41NCA0LjU0bDUuOTYgMy4zIi8+PHBhdGggZD0iTTYuNzUgNy4zM0w1LjcgOC4wOCIvPjxwYXRoIGQ9Ik02LjU0IDExLjJsLTEuMDcuNzUiLz48cGF0aCBkPSJNOS41IDEzLjc4bC0xLjA3Ljc1Ii8+PC9zdmc+'
+        defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='
     };
 
-    // 初始化检查登录状态
+    // 初始化
     document.addEventListener('DOMContentLoaded', async () => {
         initializeEventListeners();
         
-        // 检查现有会话,但不显示提示
+        // 检查现有会话
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session?.user) {
             currentUser = session.user;
             updateUIForLoggedInUser(currentUser);
-            await loadUserData(currentUser.id);
+            await loadMyApps();
         }
         
         await initData();
@@ -265,7 +1239,7 @@
         const hasUpper = /[A-Z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
         
-        if (!hasLower || !hasUpper || !hasNumber) {
+        if (!hasLower || !hasUpper || !hasNumber || password.length < 8) {
             return false;
         }
         return true;
@@ -278,7 +1252,6 @@
         const password = document.getElementById('login-password').value;
         
         try {
-            showLoading();
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email,
                 password
@@ -286,12 +1259,15 @@
             
             if (error) throw error;
             
+            currentUser = data.user;
+            updateUIForLoggedInUser(currentUser);
             hideDialogs();
             showToast('登录成功!', 'success');
+            
+            // 加载用户数据
+            await loadMyApps();
         } catch (error) {
-            showToast('登录失败: ' + error.message + '，请检查账号密码', 'error');
-        } finally {
-            hideLoading();
+            showToast('登录失败: ' + error.message, 'error');
         }
     }
 
@@ -303,7 +1279,7 @@
         const confirmPassword = document.getElementById('signup-password-confirm').value;
         
         if (!validatePassword(password)) {
-            showToast('密码必须包含大小写字母和数字', 'error');
+            showToast('密码必须包含大小写字母和数字，且至少8个字符', 'error');
             return;
         }
         
@@ -313,7 +1289,6 @@
         }
         
         try {
-            showLoading();
             const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
@@ -328,17 +1303,8 @@
             showToast('注册成功!请查收验证邮件', 'success');
         } catch (error) {
             showToast('注册失败: ' + error.message, 'error');
-        } finally {
-            hideLoading();
         }
     }
-
-    // 添加实时密码验证
-    document.getElementById('signup-password').addEventListener('input', (e) => {
-        const password = e.target.value;
-        const isValid = validatePassword(password);
-        e.target.style.borderColor = password && !isValid ? '#f44336' : '';
-    });
 
     // 请求重置密码
     async function handlePasswordReset(e) {
@@ -346,7 +1312,6 @@
         const email = document.getElementById('reset-email').value;
         
         try {
-            showLoading();
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/reset-password`
             });
@@ -357,15 +1322,12 @@
             showToast('重置密码链接已发送到您的邮箱', 'success');
         } catch (error) {
             showToast('发送重置链接失败: ' + error.message, 'error');
-        } finally {
-            hideLoading();
         }
     }
 
     // 用户登出
     async function handleLogout() {
         try {
-            showLoading();
             const { error } = await supabaseClient.auth.signOut();
             if (error) throw error;
             
@@ -380,8 +1342,6 @@
             showPage('home-page');
         } catch (error) {
             showToast('退出失败: ' + error.message, 'error');
-        } finally {
-            hideLoading();
         }
     }
 
@@ -397,7 +1357,8 @@
     // 初始化数据
     async function initData() {
         try {
-            showLoading();
+            // 更新搜索统计
+            document.getElementById('search-stats').textContent = '正在加载表盘数据...';
             
             // 获取应用列表
             const { data: apps, error: appErr } = await supabaseClient
@@ -406,82 +1367,140 @@
                 .order('created_at', { ascending: false });
             
             if (appErr) throw appErr;
-            appsData = apps || [];
             
-            // 如果用户已登录，获取收藏和我的应用
-            if (currentUser) {
-                await loadUserData(currentUser.id);
-            }
+            // 过滤表盘应用（名称中包含"表盘"的应用）
+            appsData = (apps || []).filter(app => 
+                app.name && (app.name.includes('表盘') || app.name.includes('表盘') || 
+                (app.description && app.description.includes('表盘')))
+            );
             
-            renderApps();
-            initLazyLoad(); // 初始化懒加载
-            setupRealtimeUpdates();
+            filteredApps = [...appsData];
+            
+            // 更新搜索统计
+            updateSearchStats();
+            
+            // 初始化视图和分页
+            setupSearchAndPagination();
+            
         } catch (error) {
             showToast('数据加载失败: ' + error.message, 'error');
+            document.getElementById('search-stats').textContent = '数据加载失败';
             console.error('初始化错误:', error);
-        } finally {
-            hideLoading();
         }
     }
 
-    // 设置实时更新
-    function setupRealtimeUpdates() {
-        // 应用更新频道
-        const appsChannel = supabaseClient
-            .channel('applications')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'applications'
-            }, () => {
-                initData();
-            })
-            .subscribe();
-
-        // 收藏更新频道
-        const favoritesChannel = supabaseClient
-            .channel('favorites')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'favorites'
-            }, () => {
-                if (currentUser) loadUserData(currentUser.id);
-            })
-            .subscribe();
+    // 更新搜索统计
+    function updateSearchStats() {
+        const searchStats = document.getElementById('search-stats');
+        const searchInput = document.getElementById('search-input');
+        const searchTerm = searchInput ? searchInput.value.trim() : '';
+        
+        if (searchTerm) {
+            searchStats.textContent = `找到 ${filteredApps.length} 个与"${searchTerm}"相关的表盘`;
+        } else {
+            searchStats.textContent = `共 ${filteredApps.length} 个表盘`;
+        }
+        
+        // 如果没有搜索结果
+        if (filteredApps.length === 0 && searchTerm) {
+            searchStats.innerHTML = `没有找到与"${searchTerm}"相关的表盘，请尝试其他关键词`;
+        }
     }
 
-    // 加载用户应用数据
-    async function loadUserData(userId) {
-        try {
-            // 获取用户上传的应用
-            const { data: apps, error: appsError } = await supabaseClient
-                .from('applications')
-                .select('*')
-                .eq('author', userId);
-            
-            if (appsError) throw appsError;
-            myApps = apps || [];
-            
-            // 获取用户收藏
-            const { data: favs, error: favsError } = await supabaseClient
-                .from('favorites')
-                .select('app_id,applications(*)')
-                .eq('user_id', userId);
-            
-            if (favsError) throw favsError;
-            favorites = favs?.map(f => f.applications) || [];
-            
-            // 更新页面
-            if (document.getElementById('my-apps-page').classList.contains('active')) {
-                loadMyApps();
-            }
-            if (document.getElementById('favorites-page').classList.contains('active')) {
-                loadFavorites();
-            }
-        } catch (error) {
-            showToast('加载用户数据失败: ' + error.message, 'error');
+    // 设置搜索和分页功能
+    function setupSearchAndPagination() {
+        // 搜索功能 - 使用防抖减少频繁搜索
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.trim();
+                
+                // 清除之前的定时器
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                // 设置新的定时器，延迟300ms执行搜索
+                searchTimeout = setTimeout(() => {
+                    filterApps(searchTerm);
+                    currentPage = 1;
+                    renderApps();
+                    updateSearchStats();
+                }, 300);
+            });
         }
+        
+        // 视图切换
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentView = this.dataset.view;
+                switchView(currentView);
+            });
+        });
+        
+        // 分页按钮
+        document.getElementById('prev-page')?.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderApps();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+        
+        document.getElementById('next-page')?.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderApps();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+        
+        // 初始渲染
+        renderApps();
+    }
+
+    // 过滤应用
+    function filterApps(searchTerm) {
+        if (!searchTerm) {
+            filteredApps = [...appsData];
+        } else {
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            filteredApps = appsData.filter(app => {
+                // 搜索名称
+                if (app.name && app.name.toLowerCase().includes(lowerSearchTerm)) return true;
+                
+                // 搜索描述
+                if (app.description && app.description.toLowerCase().includes(lowerSearchTerm)) return true;
+                
+                // 搜索包名
+                if (app.package && app.package.toLowerCase().includes(lowerSearchTerm)) return true;
+                
+                // 搜索作者
+                if (app.author_name && app.author_name.toLowerCase().includes(lowerSearchTerm)) return true;
+                
+                return false;
+            });
+        }
+    }
+
+    // 切换视图
+    function switchView(view) {
+        const gridView = document.getElementById('app-grid-view');
+        const listView = document.getElementById('app-list-view');
+        
+        if (view === 'grid') {
+            gridView.classList.add('active');
+            listView.classList.remove('active');
+        } else {
+            gridView.classList.remove('active');
+            listView.classList.add('active');
+        }
+        
+        // 重新渲染应用（保持当前分页）
+        renderApps();
     }
 
     // 上传应用到 Supabase
@@ -490,53 +1509,78 @@
             showToast('请先登录', 'error');
             return;
         }
-
-        // 存储文件路径，用于可能的清理操作
+        
         let filePath = null;
 
         try {
-            showLoading();
+            showToast('开始上传表盘...', 'info');
+            
+            // 获取作者信息
+            const authorName = appData.author_name || currentUser.email;
             
             // 上传文件
             const timestamp = Date.now();
             const fileName = `${appData.package}_${timestamp}.rpk`;
             filePath = `${currentUser.id}/${fileName}`;
-
+            
+            // 上传RPK文件
             const { data: fileData, error: uploadError } = await supabaseClient.storage
                 .from(SUPABASE.STORAGE_BUCKET)
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
             
-            if (uploadError) throw uploadError;
-
+            if (uploadError) {
+                console.error('文件上传错误:', uploadError);
+                throw new Error(`文件上传失败: ${uploadError.message}`);
+            }
+            
+            // 获取公开URL
             const { data: urlData } = supabaseClient.storage
                 .from(SUPABASE.STORAGE_BUCKET)
                 .getPublicUrl(filePath);
 
-            // 创建应用记录 - 移除 metadata 字段
-            const { error: dbError } = await supabaseClient
+            // 准备插入的数据
+            const appDataToInsert = {
+                name: appData.name,
+                package: appData.package,
+                version: appData.version,
+                description: appData.description,
+                download_url: urlData.publicUrl,
+                icon_url: appData.icon,
+                author_name: authorName,
+                author: currentUser.id,
+                created_at: new Date().toISOString(),
+                is_anonymous: false
+            };
+            
+            const { data: insertData, error: dbError } = await supabaseClient
                 .from('applications')
-                .insert({
-                    name: appData.name,
-                    package: appData.package,
-                    version: appData.version,
-                    description: appData.description,
-                    download_url: urlData.publicUrl,
-                    icon_url: appData.icon,
-                    author: currentUser.id,
-                    created_at: new Date().toISOString()
-                });
+                .insert(appDataToInsert)
+                .select();
             
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('数据库插入错误:', dbError);
+                throw new Error(`数据库插入失败: ${dbError.message}`);
+            }
             
-            showToast('应用上传成功!', 'success');
+            showToast('表盘上传成功!', 'success');
             await initData();
-            showPage('my-apps-page');
-        } catch (error) {
-            showToast('上传失败: ' + error.message, 'error');
-            console.error('上传错误:', error);
+            await loadMyApps();
             
-            // 如果文件已经上传但后续操作失败，删除已上传的文件
-            if (filePath) {
+            // 清空表单
+            clearUploadForm();
+            
+            // 返回首页
+            showPage('home-page');
+            
+        } catch (error) {
+            console.error('完整上传错误:', error);
+            showToast('上传失败: ' + error.message, 'error');
+            
+            // 清理已上传的文件
+            if (filePath && currentUser) {
                 try {
                     const { error: removeError } = await supabaseClient.storage
                         .from(SUPABASE.STORAGE_BUCKET)
@@ -544,20 +1588,33 @@
                     
                     if (removeError) {
                         console.error('清理已上传文件失败:', removeError);
-                    } else {
-                        console.log('已上传的文件已成功清理:', filePath);
                     }
                 } catch (cleanupError) {
                     console.error('清理文件时发生错误:', cleanupError);
                 }
             }
-        } finally {
-            hideLoading();
         }
+    }
+
+    // 清空上传表单
+    function clearUploadForm() {
+        document.getElementById('app-file').value = '';
+        document.getElementById('app-name').value = '';
+        document.getElementById('app-package').value = '';
+        document.getElementById('app-version').value = '';
+        document.getElementById('app-description').value = '';
+        document.getElementById('app-author').value = '';
+        document.getElementById('app-icon').value = '';
+        document.getElementById('upload-preview').innerHTML = '<p>表盘预览将在这里显示</p>';
     }
 
     // 处理手动上传
     async function handleManualUpload() {
+        if (!currentUser) {
+            showToast('请先登录', 'error');
+            return;
+        }
+        
         try {
             const fileInput = document.getElementById('app-file');
             const files = fileInput.files;
@@ -586,7 +1643,7 @@
             if (queryError) throw queryError;
             
             if (existingApps && existingApps.length > 0) {
-                showToast('该应用已存在,请使用其他包名', 'error');
+                showToast('该表盘已存在,请使用其他包名', 'error');
                 return;
             }
 
@@ -600,7 +1657,7 @@
 
             // 解析RPK文件获取更多信息
             const appInfo = await parseRPK(file);
-            if (!appInfo) throw new Error('无法解析应用信息');
+            if (!appInfo) throw new Error('无法解析表盘信息');
 
             // 如果用户选择了自定义图标，使用它
             if (iconFile) {
@@ -612,11 +1669,7 @@
                 appInfo.icon = iconBase64;
             }
 
-            // 合并作者信息到描述中
-            const finalDescription = `作者: ${author}
-${description}`;
-
-            // 检查是否为表盘应用，如果是则在应用名后添加"（表盘）"
+            // 检查是否为表盘应用
             let finalName = name;
             if (appInfo.isWatchface && !finalName.includes('（表盘）') && !finalName.includes('(表盘)')) {
                 finalName = `${finalName} (表盘)`;
@@ -628,7 +1681,8 @@ ${description}`;
                 name: finalName,
                 package: packageName,
                 version: version,
-                description: finalDescription
+                description: description,
+                author_name: author || currentUser.email
             };
 
             await saveApplication(newApp, file);
@@ -637,28 +1691,7 @@ ${description}`;
         }
     }
 
-    // 处理文件选择(从我的页面)
-    async function handleFileSelect(e) {
-        try {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (!validateFile(file)) return;
-
-            selectedFile = file;
-            showToast('文件已选择，开始解析...');
-
-            const appInfo = await parseRPK(file);
-            if (appInfo) {
-                showAppDetail(appInfo);
-            }
-        } catch (error) {
-            showToast('选择文件时出错: ' + error.message, 'error');
-            console.error('文件选择错误:', error);
-        }
-    }
-
-    // 修改处理文件选择函数
+    // 处理文件选择(用于上传)
     async function handleFileSelectForUpload(e) {
         try {
             const files = e.target.files;
@@ -685,14 +1718,14 @@ ${description}`;
                 document.getElementById('app-name').value = appInfo.name;
                 document.getElementById('app-package').value = appInfo.package;
                 document.getElementById('app-version').value = appInfo.version;
-                document.getElementById('app-description').value = appInfo.description;
+                document.getElementById('app-description').value = appInfo.description || '';
 
                 // 显示预览
                 const img = document.createElement('img');
                 img.src = appInfo.icon;
                 preview.appendChild(img);
 
-                showToast('应用信息已自动填充');
+                showToast('表盘信息已自动填充');
             }
         } catch (error) {
             showToast('选择文件时出错: ' + error.message, 'error');
@@ -701,71 +1734,182 @@ ${description}`;
         }
     }
 
-    // 收藏功能
-    async function toggleFavorite(appId, isFavorite) {
+    // 加载我的应用
+    async function loadMyApps() {
         if (!currentUser) {
-            showToast('请先登录', 'error');
+            myApps = [];
             return;
         }
         
         try {
-            if (isFavorite) {
-                // 已收藏，取消
-                const { data: existingFav, error: getErr } = await supabaseClient
-                    .from('favorites')
-                    .select()
-                    .eq('app_id', appId)
-                    .eq('user_id', currentUser.id);
-                    
-                if (getErr) throw getErr;
-                
-                if (existingFav.length > 0) {
-                    const { error: delErr } = await supabaseClient
-                        .from('favorites')
-                        .delete()
-                        .eq('id', existingFav[0].id);
-                        
-                    if (delErr) throw delErr;
-                    showToast('已取消收藏', 'success');
-                }
-            } else {
-                // 未收藏，添加
-                const { error: insErr } = await supabaseClient
-                    .from('favorites')
-                    .insert([{ 
-                        app_id: appId,
-                        user_id: currentUser.id
-                    }]);
-                    
-                if (insErr) throw insErr;
-                showToast('已添加收藏', 'success');
-            }
+            // 获取用户上传的应用
+            const { data: apps, error: appsError } = await supabaseClient
+                .from('applications')
+                .select('*')
+                .eq('author', currentUser.id);
             
-            // 更新用户数据
-            await loadUserData(currentUser.id);
+            if (appsError) throw appsError;
+            myApps = apps || [];
             
-            // 更新详情页按钮
-            const modalBody = document.getElementById('modal-body');
-            const btn = modalBody.querySelector('button[onclick^="toggleFavorite"]');
-            if (btn) {
-                // 根据当前收藏状态切换按钮文本和样式
-                btn.textContent = isFavorite ? '🤍 收藏' : '❤️ 取消收藏';
-                btn.className = `btn ${isFavorite ? 'btn-success' : 'btn-danger'}`;
-                // 切换onclick参数
-                btn.onclick = () => toggleFavorite(appId, !isFavorite);
+            // 如果正在我的表盘页面，更新显示
+            if (document.getElementById('my-apps-page').classList.contains('active')) {
+                renderMyApps();
             }
         } catch (error) {
-            showToast('操作失败: ' + error.message, 'error');
+            console.error('加载我的表盘失败:', error);
         }
     }
 
+    // 渲染我的应用
+    function renderMyApps() {
+        const myAppsList = document.getElementById('my-apps-list');
+        myAppsList.innerHTML = '';
+        
+        if (myApps.length === 0) {
+            myAppsList.innerHTML = '<div class="empty-state"><p>您还没有上传过表盘</p></div>';
+            return;
+        }
+        
+        // 使用文档片段批量添加DOM元素
+        const fragment = document.createDocumentFragment();
+        
+        myApps.forEach(app => {
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.dataset.id = app.id;
+            
+            const realSrc = app.icon_url || CONFIG.defaultIcon;
+            card.innerHTML = `
+                <img class="app-icon" src="${realSrc}" 
+                     alt="${app.name}" 
+                     onerror="this.src='${CONFIG.defaultIcon}'">
+                <h3 class="app-name">${app.name}</h3>
+                <div class="app-meta">
+                    <p>版本: ${app.version || '1.0.0'}</p>
+                    <p>作者: ${app.author_name || '匿名用户'}</p>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => showAppDetail(app));
+            fragment.appendChild(card);
+        });
+        
+        myAppsList.appendChild(fragment);
+    }
+
+    // 渲染应用卡片
+    function renderAppCard(app, container = null) {
+        if (!container) container = document.getElementById('app-grid-view');
+        
+        const card = document.createElement('div');
+        card.className = 'app-card';
+        card.dataset.id = app.id;
+        
+        // 使用真实图标或默认图标
+        const realSrc = app.icon_url || CONFIG.defaultIcon;
+        card.innerHTML = `
+            <img class="app-icon" src="${realSrc}" 
+                 alt="${app.name}" 
+                 onerror="this.src='${CONFIG.defaultIcon}'">
+            <h3 class="app-name">${app.name}</h3>
+            <div class="app-meta">
+                <p>版本: ${app.version || '1.0.0'}</p>
+                <p>作者: ${app.author_name || '匿名用户'}</p>
+            </div>
+        `;
+        
+        card.addEventListener('click', () => showAppDetail(app));
+        container.appendChild(card);
+    }
+    
+    // 渲染列表项
+    function renderAppListItem(app, container) {
+        const item = document.createElement('div');
+        item.className = 'app-list-item';
+        item.dataset.id = app.id;
+        
+        const realSrc = app.icon_url || CONFIG.defaultIcon;
+        item.innerHTML = `
+            <img class="app-icon" src="${realSrc}" 
+                 alt="${app.name}" 
+                 onerror="this.src='${CONFIG.defaultIcon}'">
+            <div class="app-info">
+                <h3 class="app-name">${app.name}</h3>
+                <div class="app-meta">
+                    <span>版本: ${app.version || '1.0.0'}</span>
+                    <span>作者: ${app.author_name || '匿名用户'}</span>
+                    <span>上传: ${app.created_at ? new Date(app.created_at).toLocaleDateString('zh-CN') : '未知'}</span>
+                </div>
+                <p class="app-description">${app.description || '暂无描述'}</p>
+            </div>
+        `;
+        
+        item.addEventListener('click', () => showAppDetail(app));
+        container.appendChild(item);
+    }
+
+    // 显示应用详情
+    async function showAppDetail(app) {
+        const modal = document.getElementById('detail-modal');
+        const modalBody = document.getElementById('modal-body');
+        
+        // 检查是否是当前用户的应用
+        const isMyApp = currentUser ? app.author === currentUser.id : false;
+        
+        // 格式化日期
+        const formattedDate = app.created_at ? 
+            new Date(app.created_at).toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '未知';
+        
+        modalBody.innerHTML = `
+            <div class="detail-section">
+                <img src="${app.icon_url || CONFIG.defaultIcon}" 
+                     alt="${app.name}" class="app-icon" style="width: 120px; height: 120px; border-radius: 24px; margin: 0 auto 20px; display: block; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                <h2>${app.name}</h2>
+                <p class="app-meta">版本: ${app.version || '1.0.0'}</p>
+                <p class="app-meta">作者: ${app.author_name || '匿名用户'}</p>
+                <p style="margin-top: 15px; line-height: 1.6;">${app.description || '暂无描述'}</p>
+            </div>
+            <div class="detail-section">
+                <h3 class="detail-title">表盘信息</h3>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <strong>包名:</strong> ${app.package || '未提供'}
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <strong>上传时间:</strong> ${formattedDate}
+                    </div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <a href="${app.download_url}" class="btn btn-primary" target="_blank" style="padding: 14px 28px; font-size: 17px; text-decoration: none; min-width: 150px; display: inline-flex; align-items: center; justify-content: center;">立即下载</a>
+                    ${isMyApp ? `<button class="btn btn-danger" onclick="deleteApp('${app.id}')" style="padding: 14px 28px; font-size: 17px; min-width: 150px; display: inline-flex; align-items: center; justify-content: center;">删除表盘</button>` : ''}
+                </div>
+            </div>`;
+        
+        // 添加active类以触发动画
+        modal.classList.add('active');
+        
+        // 绑定关闭按钮事件
+        document.querySelector('.modal-close').onclick = closeModal;
+    }
+    
     // 删除应用
     async function deleteApp(appId) {
-        if (!confirm('确定要删除这个应用吗？')) return;
+        if (!currentUser) {
+            showToast('删除表盘需要登录', 'error');
+            return;
+        }
+        
+        if (!confirm('确定要删除这个表盘吗？删除后无法恢复。')) return;
         
         try {
-            showLoading();
-            
             // 获取应用信息
             const { data: app, error: fetchError } = await supabaseClient
                 .from('applications')
@@ -777,7 +1921,7 @@ ${description}`;
             
             // 确保是应用所有者
             if (app.author !== currentUser.id) {
-                throw new Error('您没有权限删除此应用');
+                throw new Error('您没有权限删除此表盘');
             }
 
             // 从URL中提取存储路径
@@ -802,200 +1946,14 @@ ${description}`;
                 
             if (dbError) throw dbError;
             
-            showToast('应用已删除', 'success');
+            showToast('表盘已删除', 'success');
             closeModal();
             await initData();
+            await loadMyApps();
         } catch (error) {
             showToast('删除失败: ' + error.message, 'error');
             console.error('删除错误:', error);
-        } finally {
-            hideLoading();
         }
-    }
-
-    // 加载应用
-    async function loadApps(category = null) {
-        try {
-            const appList = document.getElementById('app-list');
-            appList.innerHTML = '';
-            
-            for (const app of appsData) {
-                if (!category || (app.metadata && app.metadata.appCategory && app.metadata.appCategory.includes(category))) {
-                    renderAppCard(app, appList);
-                }
-            }
-        } catch (error) {
-            showToast('加载应用失败: ' + error.message, 'error');
-        }
-    }
-
-    // 加载我的应用
-    function loadMyApps() {
-        const myAppsList = document.getElementById('my-apps-list');
-        myAppsList.innerHTML = '';
-        
-        if (myApps.length === 0) {
-            myAppsList.innerHTML = '<p style="grid-column:1/-1;text-align:center;">您还没有上传过应用</p>';
-            return;
-        }
-        
-        // 使用文档片段批量添加DOM元素
-        const fragment = document.createDocumentFragment();
-        
-        myApps.forEach(app => {
-            const card = document.createElement('div');
-            card.className = 'app-card';
-            card.dataset.id = app.id;
-            
-            const realSrc = app.icon_url || (app.icon || CONFIG.defaultIcon);
-            card.innerHTML = `
-                <img class="app-icon lazyload" data-src="${realSrc}" 
-                     src="${CONFIG.defaultIcon}" alt="${app.name}" 
-                     onerror="this.src='${CONFIG.defaultIcon}'">
-                <h3 class="app-name">${app.name}</h3>
-                <div class="app-meta">
-                    <p>版本: ${app.version}</p>
-                    ${app.metadata?.appCategory?.map(c => `<span class="category-tag">${c}</span>`).join('') || ''}
-                </div>
-            `;
-            
-            card.addEventListener('click', () => showAppDetail(app));
-            fragment.appendChild(card);
-        });
-        
-        myAppsList.appendChild(fragment);
-        initLazyLoad(); // 重新初始化懒加载
-    }
-
-    // 加载收藏
-    function loadFavorites() {
-        const favoritesList = document.getElementById('favorites-list');
-        favoritesList.innerHTML = '';
-        
-        if (favorites.length === 0) {
-            favoritesList.innerHTML = '<p style="grid-column:1/-1;text-align:center;">您还没有收藏应用</p>';
-            return;
-        }
-        
-        // 使用文档片段批量添加DOM元素
-        const fragment = document.createDocumentFragment();
-        
-        favorites.forEach(app => {
-            const card = document.createElement('div');
-            card.className = 'app-card';
-            card.dataset.id = app.id;
-            
-            const realSrc = app.icon_url || (app.icon || CONFIG.defaultIcon);
-            card.innerHTML = `
-                <img class="app-icon lazyload" data-src="${realSrc}" 
-                     src="${CONFIG.defaultIcon}" alt="${app.name}" 
-                     onerror="this.src='${CONFIG.defaultIcon}'">
-                <h3 class="app-name">${app.name}</h3>
-                <div class="app-meta">
-                    <p>版本: ${app.version}</p>
-                    ${app.metadata?.appCategory?.map(c => `<span class="category-tag">${c}</span>`).join('') || ''}
-                </div>
-            `;
-            
-            card.addEventListener('click', () => showAppDetail(app));
-            fragment.appendChild(card);
-        });
-        
-        favoritesList.appendChild(fragment);
-        initLazyLoad(); // 重新初始化懒加载
-    }
-
-    // 渲染应用卡片
-    function renderAppCard(app, container = null) {
-        if (!container) container = document.getElementById('app-list');
-        
-        const card = document.createElement('div');
-        card.className = 'app-card';
-        card.dataset.id = app.id;
-        
-        // 使用懒加载，将真实图片地址存放在data-src属性中，初始使用默认图标
-        const realSrc = app.icon_url || (app.icon || CONFIG.defaultIcon);
-        card.innerHTML = `
-            <img class="app-icon lazyload" data-src="${realSrc}" 
-                 src="${CONFIG.defaultIcon}" alt="${app.name}" 
-                 onerror="this.src='${CONFIG.defaultIcon}'">
-            <h3 class="app-name">${app.name}</h3>
-            <div class="app-meta">
-                <p>版本: ${app.version}</p>
-                ${app.metadata?.appCategory?.map(c => `<span class="category-tag">${c}</span>`).join('') || ''}
-            </div>
-        `;
-        
-        card.addEventListener('click', () => showAppDetail(app));
-        container.appendChild(card);
-    }
-    
-    // 懒加载图片函数
-    function lazyLoadImages() {
-        const lazyImages = document.querySelectorAll('.lazyload');
-        
-        lazyImages.forEach(img => {
-            const rect = img.getBoundingClientRect();
-            const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
-            
-            if (isVisible) {
-                // 图片进入视口，加载真实图片
-                img.src = img.dataset.src;
-                img.classList.remove('lazyload');
-            }
-        });
-    }
-    
-    // 初始化懒加载
-    function initLazyLoad() {
-        // 初始加载可见区域的图片
-        lazyLoadImages();
-        
-        // 监听滚动和窗口大小变化事件
-        window.addEventListener('scroll', lazyLoadImages);
-        window.addEventListener('resize', lazyLoadImages);
-    }
-
-    // 显示应用详情
-    async function showAppDetail(app) {
-        const isFavorite = favorites.some(f => f.id === app.id);
-        const isMyApp = myApps.some(a => a.id === app.id);
-        
-        const modal = document.getElementById('detail-modal');
-        const modalBody = document.getElementById('modal-body');
-        
-        modalBody.innerHTML = `
-            <div class="detail-section">
-                <img src="${app.icon_url || (app.icon || CONFIG.defaultIcon)}" 
-                     alt="${app.name}" class="app-icon" style="width: 120px; height: 120px; border-radius: 24px; margin: 0 auto 20px; display: block; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
-                <h2>${app.name}</h2>
-                <p class="app-meta">版本: ${app.version}</p>
-                <p style="margin-top: 15px; line-height: 1.6;">${app.description || '暂无描述'}</p>
-            </div>
-            <div class="detail-section">
-                <h3 class="detail-title">应用信息</h3>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <strong>包名:</strong> ${app.package}
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <strong>上传时间:</strong> ${app.created_at ? new Date(app.created_at).toLocaleString() : '未知'}
-                    </div>
-                </div>
-            </div>
-            <div class="detail-section">
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0;">
-                    ${currentUser ? `<button class="btn ${isFavorite ? 'btn-danger' : 'btn-success'}" onclick="toggleFavorite('${app.id}', ${isFavorite})" style="padding: 10px 20px; font-size: 15px; cursor: pointer; min-width: 130px; height: 48px; display: inline-flex; align-items: center; justify-content: center;">${isFavorite ? '❤️ 取消收藏' : '🤍 收藏'}</button>` : ''}
-                    <a href="${app.download_url}" class="btn btn-primary" target="_blank" style="padding: 14px 28px; font-size: 17px; text-decoration: none; min-width: 150px; height: 56px; display: inline-flex; align-items: center; justify-content: center;">立即下载</a>
-                    ${isMyApp ? `<button class="btn btn-warning" onclick="deleteApp('${app.id}')" style="padding: 10px 20px; font-size: 15px; cursor: pointer; min-width: 130px; height: 48px; display: inline-flex; align-items: center; justify-content: center;">删除应用</button>` : ''}
-                </div>
-            </div>`;
-        
-        // 添加active类以触发动画
-        modal.classList.add('active');
-        
-        // 绑定关闭按钮事件
-        document.querySelector('.modal-close').onclick = closeModal;
     }
     
     // 页面切换
@@ -1017,8 +1975,19 @@ ${description}`;
         });
         
         // 特殊页面处理
-        if (pageId === 'my-apps-page') loadMyApps();
-        if (pageId === 'favorites-page') loadFavorites();
+        if (pageId === 'my-apps-page') renderMyApps();
+        
+        // 当切换到首页时，确保搜索和分页功能正常工作
+        if (pageId === 'home-page') {
+            setupSearchAndPagination();
+        }
+        
+        // 检查是否需要登录才能访问上传页面
+        if (pageId === 'upload-page' && !currentUser) {
+            showToast('请先登录才能上传表盘', 'error');
+            showDialog('login-dialog');
+            showPage('profile-page');
+        }
     }
 
     // 底部导航栏点击事件
@@ -1042,150 +2011,15 @@ ${description}`;
         });
     }
 
-    // 事件监听器初始化
-    function initializeEventListeners() {
-        // 文件上传相关
-        document.getElementById('file-input').addEventListener('change', handleFileSelect);
-        document.getElementById('app-file').addEventListener('change', handleFileSelectForUpload);
-        document.getElementById('app-icon').addEventListener('change', handleIconSelect);
-
-        // 用户功能
-        document.getElementById('upload-feature').addEventListener('click', () => {
-            if (!currentUser) {
-                showToast('请先登录', 'error');
-                return;
-            }
-            showPage('upload-page');
-        });
-        
-        document.getElementById('my-apps-feature').addEventListener('click', () => {
-            if (!currentUser) {
-                showToast('请先登录', 'error');
-                return;
-            }
-            showPage('my-apps-page');
-        });
-        
-        document.getElementById('favorites-feature').addEventListener('click', () => {
-            if (!currentUser) {
-                showToast('请先登录', 'error');
-                return;
-            }
-            showPage('favorites-page');
-        });
-        
-        // 按钮事件
-        document.getElementById('submit-upload').addEventListener('click', handleManualUpload);
-        document.getElementById('login-btn').addEventListener('click', () => showDialog('login-dialog'));
-        document.getElementById('signup-btn').addEventListener('click', () => showToast('暂不支持自行注册，应用上传账号注册请联系justliuil', 'info'));
-        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            showToast('密码重置请联系Justliuil', 'info');
-        });
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-        
-        document.getElementById('auth-backdrop').addEventListener('click', hideDialogs);
-        document.getElementById('login-form').addEventListener('submit', handleLogin);
-        document.getElementById('signup-form').addEventListener('submit', handleSignup);
-        document.getElementById('reset-password-form').addEventListener('submit', handlePasswordReset);
-        
-        // 弹窗关闭
-        document.getElementById('detail-modal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('detail-modal')) closeModal();
-        });
-        
-        // 导航栏
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', handleNavigation);
-        });
-        
-        // 发现页标签切换
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                this.classList.add('active');
-                document.getElementById(`${this.dataset.tab}-content`).classList.add('active');
-            });
-        });
-        
-        // 监听认证状态变化
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session?.user?.id !== currentUser?.id) {
-                // 只在新登录时显示提示，避免重复触发
-                currentUser = session.user;
-                updateUIForLoggedInUser(currentUser);
-                loadUserData(currentUser.id);
-                showToast('登录成功', 'success');
-            } else if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                document.getElementById('login-btn').style.display = 'block';
-                document.getElementById('signup-btn').style.display = 'block';
-                document.getElementById('logout-btn').style.display = 'none';
-                document.querySelector('.user-avatar').textContent = '👤';
-                document.getElementById('user-name').textContent = '我的空间';
-                showToast('已退出登录', 'success');
-            }
-        });
-    }
-
     // 关闭弹窗函数
     function closeModal() {
         const modal = document.getElementById('detail-modal');
         modal.classList.remove('active');
         
-        // 清理事件监听器和内容
+        // 清理内容
         setTimeout(() => {
             document.getElementById('modal-body').innerHTML = '';
         }, 300);
-    }
-
-    // 显示加载动画
-    function showLoading() {
-        document.getElementById('loading').style.display = 'flex';
-    }
-
-    // 隐藏加载动画
-    function hideLoading() {
-        document.getElementById('loading').style.display = 'none';
-    }
-
-    // 处理图标选择
-    function handleIconSelect(e) {
-        try {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // 验证图片格式
-            if (!file.type.match('image.*')) {
-                showToast('请选择图片文件', 'error');
-                e.target.value = '';
-                return;
-            }
-
-            // 验证文件大小
-            if (file.size > 1 * 1024 * 1024) { // 1MB限制
-                showToast('图标文件大小不能超过1MB', 'error');
-                e.target.value = '';
-                return;
-            }
-
-            // 读取并预览图标
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const preview = document.getElementById('upload-preview');
-                preview.innerHTML = '';
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                preview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        } catch (error) {
-            showToast('选择图标时出错: ' + error.message, 'error');
-            console.error('图标选择错误:', error);
-            e.target.value = '';
-        }
     }
 
     // 显示提示消息
@@ -1203,8 +2037,8 @@ ${description}`;
             showToast('请选择.rpk文件', 'error');
             return false;
         }
-        if (file.size > 3 * 1024 * 1024) { // 3MB限制
-            showToast('文件大小不能超过3MB', 'error');
+        if (file.size > 5 * 1024 * 1024) { // 5MB限制
+            showToast('文件大小不能超过5MB', 'error');
             return false;
         }
         return true;
@@ -1268,7 +2102,7 @@ ${description}`;
             let appName = manifest.name;
             const isWatchface = manifest.router && manifest.router.watchfaces;
             
-            if (isWatchface) {
+            if (isWatchface && !appName.includes('表盘')) {
                 appName = `${appName} (表盘)`;
             }
             
@@ -1282,7 +2116,7 @@ ${description}`;
                 description: manifest.description || '',
                 features: manifest.features || [],
                 permissions: manifest.permissions || [],
-                appCategory: manifest.categories || ['工具'],
+                appCategory: manifest.categories || ['表盘'],
                 deviceTypeList: manifest.deviceTypes || ['watch'],
                 distributionRules: {
                     minAPILevel: manifest.minPlatformVersion || 1
@@ -1297,54 +2131,269 @@ ${description}`;
     
     // 渲染应用列表
     function renderApps() {
-        // 使用文档片段批量添加DOM元素，减少重排重绘
-        const renderAppsToContainer = (apps, containerId) => {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageApps = filteredApps.slice(startIndex, endIndex);
+        
+        // 清空容器
+        const gridContainer = document.getElementById('app-grid-view');
+        const listContainer = document.getElementById('app-list-view');
+        gridContainer.innerHTML = '';
+        listContainer.innerHTML = '';
+        
+        // 如果没有应用，显示提示
+        if (pageApps.length === 0) {
+            const searchInput = document.getElementById('search-input');
+            const searchTerm = searchInput ? searchInput.value.trim() : '';
             
-            // 创建文档片段
-            const fragment = document.createDocumentFragment();
+            let message = '暂无表盘数据';
+            if (searchTerm) {
+                message = `没有找到与"${searchTerm}"相关的表盘`;
+            }
             
-            apps.forEach(app => {
-                const card = document.createElement('div');
-                card.className = 'app-card';
-                card.dataset.id = app.id;
+            gridContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
+            listContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
+            updatePagination();
+            return;
+        }
+        
+        // 渲染当前页的应用
+        pageApps.forEach(app => {
+            // 根据当前视图渲染对应内容
+            if (currentView === 'grid') {
+                renderAppCard(app, gridContainer);
+            } else {
+                renderAppListItem(app, listContainer);
+            }
+        });
+        
+        // 更新分页控件
+        updatePagination();
+    }
+
+    // 更新分页控件
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+        const pageNumbers = document.getElementById('page-numbers');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const pagination = document.getElementById('pagination');
+        
+        if (!pagination) return;
+        
+        if (totalPages <= 1) {
+            pagination.style.display = 'none';
+            return;
+        }
+        
+        pagination.style.display = 'flex';
+        
+        // 更新按钮状态
+        if (prevBtn) prevBtn.disabled = currentPage === 1;
+        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+        
+        // 生成页码
+        if (pageNumbers) {
+            pageNumbers.innerHTML = '';
+            
+            // 显示最多7个页码
+            let startPage = Math.max(1, currentPage - 3);
+            let endPage = Math.min(totalPages, startPage + 6);
+            
+            if (endPage - startPage < 6) {
+                startPage = Math.max(1, endPage - 6);
+            }
+            
+            // 添加第一页
+            if (startPage > 1) {
+                const firstPageBtn = document.createElement('div');
+                firstPageBtn.className = 'page-number';
+                firstPageBtn.textContent = '1';
+                firstPageBtn.addEventListener('click', () => {
+                    currentPage = 1;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                pageNumbers.appendChild(firstPageBtn);
                 
-                const realSrc = app.icon_url || (app.icon || CONFIG.defaultIcon);
-                card.innerHTML = `
-                    <img class="app-icon lazyload" data-src="${realSrc}" 
-                         src="${CONFIG.defaultIcon}" alt="${app.name}" 
-                         onerror="this.src='${CONFIG.defaultIcon}'">
-                    <h3 class="app-name">${app.name}</h3>
-                    <div class="app-meta">
-                        <p>版本: ${app.version}</p>
-                        ${app.metadata?.appCategory?.map(c => `<span class="category-tag">${c}</span>`).join('') || ''}
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => showAppDetail(app));
-                fragment.appendChild(card);
-            });
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('div');
+                    ellipsis.className = 'page-number';
+                    ellipsis.textContent = '...';
+                    ellipsis.style.cursor = 'default';
+                    pageNumbers.appendChild(ellipsis);
+                }
+            }
             
-            // 一次性添加所有卡片到容器
-            container.appendChild(fragment);
-        };
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('div');
+                pageBtn.className = `page-number ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                pageNumbers.appendChild(pageBtn);
+            }
+            
+            // 添加最后一页
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('div');
+                    ellipsis.className = 'page-number';
+                    ellipsis.textContent = '...';
+                    ellipsis.style.cursor = 'default';
+                    pageNumbers.appendChild(ellipsis);
+                }
+                
+                const lastPageBtn = document.createElement('div');
+                lastPageBtn.className = 'page-number';
+                lastPageBtn.textContent = totalPages;
+                lastPageBtn.addEventListener('click', () => {
+                    currentPage = totalPages;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                pageNumbers.appendChild(lastPageBtn);
+            }
+        }
+    }
+
+    // 事件监听器初始化
+    function initializeEventListeners() {
+        // 导航栏
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.dataset.page) {
+                link.addEventListener('click', handleNavigation);
+            }
+        });
         
-        // 渲染首页应用列表
-        renderAppsToContainer(appsData, 'app-list');
+        // 弹窗关闭
+        document.getElementById('detail-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('detail-modal')) closeModal();
+        });
         
-        // 同时更新发现页的各个列表
-        // 简单模拟不同分类的数据
-        const hotApps = [...appsData].sort(() => 0.5 - Math.random()).slice(0, 6);
-        const newApps = [...appsData].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
-        const trendingApps = [...appsData].sort(() => 0.5 - Math.random()).slice(0, 6);
+        // 回车键触发搜索
+        document.getElementById('search-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const searchTerm = e.target.value.trim();
+                filterApps(searchTerm);
+                currentPage = 1;
+                renderApps();
+                updateSearchStats();
+            }
+        });
         
-        renderAppsToContainer(hotApps, 'hot-apps-list');
-        renderAppsToContainer(newApps, 'new-apps-list');
-        renderAppsToContainer(trendingApps, 'trending-apps-list');
+        // 用户功能
+        document.getElementById('upload-feature').addEventListener('click', () => {
+            if (!currentUser) {
+                showToast('请先登录才能上传表盘', 'error');
+                showDialog('login-dialog');
+                return;
+            }
+            showPage('upload-page');
+        });
         
-        // 重新初始化懒加载
-        initLazyLoad();
+        document.getElementById('my-apps-feature').addEventListener('click', () => {
+            if (!currentUser) {
+                showToast('请先登录才能查看我的表盘', 'error');
+                showDialog('login-dialog');
+                return;
+            }
+            showPage('my-apps-page');
+        });
+        
+        // 按钮事件
+        document.getElementById('submit-upload').addEventListener('click', handleManualUpload);
+        document.getElementById('login-btn').addEventListener('click', () => showDialog('login-dialog'));
+        document.getElementById('signup-btn').addEventListener('click', () => showDialog('signup-dialog'));
+        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            showDialog('reset-password-dialog');
+        });
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        
+        // 文件上传相关
+        document.getElementById('app-file').addEventListener('change', handleFileSelectForUpload);
+        document.getElementById('app-icon').addEventListener('change', handleIconSelect);
+        
+        // 认证对话框
+        document.getElementById('auth-backdrop').addEventListener('click', hideDialogs);
+        document.getElementById('login-form').addEventListener('submit', handleLogin);
+        document.getElementById('signup-form').addEventListener('submit', handleSignup);
+        document.getElementById('reset-password-form').addEventListener('submit', handlePasswordReset);
+        
+        // 实时密码验证
+        document.getElementById('signup-password').addEventListener('input', (e) => {
+            const password = e.target.value;
+            const isValid = validatePassword(password);
+            e.target.style.borderColor = password && !isValid ? '#ff3b30' : '';
+        });
+        
+        // 监听认证状态变化
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                currentUser = session.user;
+                updateUIForLoggedInUser(currentUser);
+                loadMyApps();
+                
+                // 如果用户是从上传页面过来的，自动跳转到上传页面
+                if (document.getElementById('upload-page').classList.contains('active')) {
+                    showPage('upload-page');
+                }
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                document.getElementById('login-btn').style.display = 'block';
+                document.getElementById('signup-btn').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'none';
+                document.querySelector('.user-avatar').textContent = '👤';
+                document.getElementById('user-name').textContent = '我的空间';
+                
+                // 如果用户在上传页面，跳转到我的页面
+                if (document.getElementById('upload-page').classList.contains('active')) {
+                    showPage('profile-page');
+                }
+            }
+        });
+    }
+
+    // 处理图标选择
+    function handleIconSelect(e) {
+        try {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 验证图片格式
+            if (!file.type.match('image.*')) {
+                showToast('请选择图片文件', 'error');
+                e.target.value = '';
+                return;
+            }
+
+            // 验证文件大小
+            if (file.size > 1 * 1024 * 1024) { // 1MB限制
+                showToast('图标文件大小不能超过1MB', 'error');
+                e.target.value = '';
+                return;
+            }
+
+            // 读取并预览图标
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('upload-preview');
+                preview.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            showToast('选择图标时出错: ' + error.message, 'error');
+            console.error('图标选择错误:', error);
+            e.target.value = '';
+        }
     }
     </script>
 </body>
