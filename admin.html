@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表盘数据编辑器 - 禾芒新屿表盘商店</title>
+    
+    <script src="js/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部样式 */
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .mode-tabs {
+            display: flex;
+            background: #f2f2f7;
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-tab.active {
+            background: white;
+            color: #007aff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .content-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .content-panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 图形化编辑器样式 */
+        .editor-actions {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: #007aff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056cc;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #007aff;
+            border: 1px solid #007aff;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(0, 122, 255, 0.1);
+        }
+        
+        .btn-success {
+            background-color: #34c759;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #30b84c;
+        }
+        
+        .btn-warning {
+            background-color: #ff9500;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e88500;
+        }
+        
+        .watchface-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .watchface-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .watchface-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #007aff;
+        }
+        
+        .watchface-card.expanded {
+            grid-column: 1 / -1;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .expand-btn {
+            background: #f2f2f7;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .expand-btn:hover {
+            background: #e5e5ea;
+        }
+        
+        .watchface-form {
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .watchface-form.expanded {
+            display: block;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 1000px; }
+        }
+        
+        .form-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #515154;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+        
+        /* 功能特色标签 */
+        .features-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-tag {
+            background: #e5e5ea;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .remove-feature {
+            cursor: pointer;
+            color: #ff3b30;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: white;
+        }
+        
+        .remove-feature:hover {
+            background: #ff3b30;
+            color: white;
+        }
+        
+        /* 代码编辑器样式 */
+        .code-actions {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .json-editor-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .json-textarea {
+            width: 100%;
+            height: 500px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 20px;
+            border: 1px solid #d2d2f7;
+            border-radius: 12px;
+            resize: vertical;
+            background: #1d1d1f;
+            color: #ffffff;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+        
+        .json-textarea:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+        
+        .copy-btn {
+            position: relative;
+        }
+        
+        .copy-success {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #34c759;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+            white-space: nowrap;
+        }
+        
+        .copy-success.show {
+            display: block;
+            animation: fadeInOut 2s ease;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
+        
+        /* RPK上传区域 */
+        .rpk-upload-area {
+            border: 2px dashed #d2d2d7;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .rpk-upload-area:hover {
+            border-color: #007aff;
+            background: rgba(0, 122, 255, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #86868b;
+            margin-bottom: 15px;
+        }
+        
+        .upload-hint {
+            color: #86868b;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        /* 预览卡片 */
+        .preview-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #34c759;
+            display: none;
+        }
+        
+        .preview-card.active {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .preview-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        
+        .preview-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .watchface-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .editor-actions, .code-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #86868b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+            background: white;
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎨 表盘数据编辑器</h1>
+            <div>
+                <button class="btn btn-outline" onclick="goBack()">返回首页</button>
+                <button class="btn btn-warning" onclick="exportData()">导出数据</button>
+            </div>
+        </header>
+        
+        <!-- 模式切换 -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="visual" onclick="switchMode('visual')">
+                🎨 图形化模式
+            </button>
+            <button class="mode-tab" data-mode="code" onclick="switchMode('code')">
+                💻 代码模式
+            </button>
+        </div>
+        
+        <!-- 图形化编辑器 -->
+        <div class="content-panel active" id="visual-editor">
+            <div class="editor-actions">
+                <button class="btn btn-success" onclick="addNewWatchface()">
+                    ＋ 添加新表盘
+                </button>
+                <button class="btn btn-primary" onclick="importJson()">
+                    📁 导入JSON数据
+                </button>
+                <input type="file" id="json-import-input" accept=".json" style="display: none;" onchange="handleJsonImport(event)">
+                <button class="btn btn-outline" onclick="processRPK()">
+                    📦 上传RPK文件
+                </button>
+                <input type="file" id="rpk-import-input" accept=".rpk" style="display: none" onchange="handleRpkUpload(event)">
+                <button class="btn btn-warning" onclick="previewData()">
+                    👁️ 预览输出
+                </button>
+                <button class="btn btn-primary" onclick="saveAllChanges()">
+                    💾 保存所有修改
+                </button>
+            </div>
+            
+            <div class="rpk-upload-area" id="rpk-drop-zone" style="display: none;">
+                <div class="upload-icon">📁</div>
+                <p>拖拽RPK文件到这里或点击上传</p>
+                <p class="upload-hint">支持单个RPK文件</p>
+            </div>
+            
+            <div class="watchface-grid" id="watchface-grid">
+                <!-- 表盘列表会在这里动态生成 -->
+            </div>
+            
+            <!-- 预览卡片 -->
+            <div class="preview-card" id="preview-card">
+                <div class="preview-header">
+                    <img id="preview-icon" class="preview-icon" src="" alt="">
+                    <div>
+                        <div id="preview-title" class="preview-title"></div>
+                        <div id="preview-subtitle" style="color: #86868b; font-size: 14px;"></div>
+                    </div>
+                </div>
+                <div id="preview-content" style="white-space: pre-wrap; font-family: 'Courier New', monospace; background: #f8f9fa; padding: 15px; border-radius: 12px; max-height: 300px; overflow-y: auto;"></div>
+                <div class="preview-actions">
+                    <button class="btn btn-primary" onclick="copyPreview()">复制JSON</button>
+                    <button class="btn btn-outline" onclick="hidePreview()">关闭预览</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 代码编辑器 -->
+        <div class="content-panel" id="code-editor">
+            <div class="code-actions">
+                <button class="btn btn-primary copy-btn" onclick="copyJson()">
+                    一键复制JSON
+                    <span class="copy-success" id="copy-success">已复制到剪贴板！</span>
+                </button>
+                <button class="btn btn-success" onclick="formatJson()">
+                    格式化JSON
+                </button>
+                <button class="btn btn-outline" onclick="document.getElementById('code-import').click()">
+                    导入JSON文件
+                </button>
+                <input type="file" id="code-import" accept=".json" style="display: none" onchange="importCodeJson(event)">
+                <button class="btn btn-warning" onclick="applyCodeChanges()">
+                    应用修改
+                </button>
+                <button class="btn btn-primary" onclick="saveCodeChanges()">
+                    保存数据
+                </button>
+            </div>
+            
+            <div class="json-editor-container">
+                <textarea class="json-textarea" id="json-code-editor" placeholder="在此粘贴或编辑JSON数据..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let watchfaceData = [];
+        let currentMode = 'visual';
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            initRPKDropZone();
+        });
+        
+        // 加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('watchface_data');
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    // 兼容不同格式的数据
+                    if (Array.isArray(parsedData)) {
+                        watchfaceData = parsedData;
+                    } else if (parsedData.watchfaces && Array.isArray(parsedData.watchfaces)) {
+                        watchfaceData = parsedData.watchfaces;
+                    }
+                    renderWatchfaceGrid();
+                } catch (error) {
+                    console.error('加载数据失败:', error);
+                    showMessage('加载数据失败，使用示例数据', 'warning');
+                    loadExampleData();
+                }
+            } else {
+                loadExampleData();
+            }
+        }
+        
+        // 加载示例数据
+        function loadExampleData() {
+            watchfaceData = [
+                {
+                    "id": "example_1",
+                    "name": "示例表盘",
+                    "package": "com.example.watchface",
+                    "version": "1.0.0",
+                    "description": "这是一个示例表盘",
+                    "author": "示例作者",
+                    "icon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg==",
+                    "category": "数字时显",
+                    "type": "原创",
+                    "device": "通用机型",
+                    "features": ["时间显示", "日期显示"],
+                    "premium": false,
+                    "price": "免费"
+                }
+            ];
+            renderWatchfaceGrid();
+        }
+        
+        // 渲染表盘网格
+        function renderWatchfaceGrid() {
+            const grid = document.getElementById('watchface-grid');
+            grid.innerHTML = '';
+            
+            if (watchfaceData.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                        <h3>暂无表盘数据</h3>
+                        <p style="margin-top: 10px;">点击"添加新表盘"按钮创建第一个表盘</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            watchfaceData.forEach((watchface, index) => {
+                const card = createWatchfaceCard(watchface, index);
+                grid.appendChild(card);
+            });
+        }
+        
+        // 创建表盘卡片
+        function createWatchfaceCard(watchface, index) {
+            const card = document.createElement('div');
+            card.className = 'watchface-card';
+            card.id = `watchface-${index}`;
+            
+            const featuresHTML = watchface.features && Array.isArray(watchface.features) 
+                ? watchface.features.map(feature => `
+                    <span class="feature-tag">
+                        ${feature}
+                        <span class="remove-feature" onclick="removeFeature(${index}, '${feature.replace(/'/g, "\\'")}')">×</span>
+                    </span>
+                `).join('')
+                : '';
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">${watchface.name || '未命名表盘'}</div>
+                    <button class="expand-btn" onclick="toggleWatchfaceForm(${index})">▼</button>
+                </div>
+                <div style="margin-bottom: 10px; color: #86868b; font-size: 14px;">
+                    ${watchface.author || '未知作者'} | ${watchface.category || '未分类'} | ${watchface.type || '原创'}
+                </div>
+                
+                <div class="watchface-form" id="form-${index}">
+                    <div class="form-section">
+                        <div class="section-title">
+                            基本信息
+                            <span style="font-size: 12px; color: #ff3b30; cursor: pointer;" onclick="deleteWatchface(${index})">
+                                删除表盘
+                            </span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">表盘名称 *</label>
+                                <input type="text" class="form-input" 
+                                       value="${watchface.name || ''}" 
+                                       onchange="updateField(${index}, 'name', this.value)"
+                                       placeholder="输入表盘名称">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">作者 *</label>
+                                <input type="text" class="form-input" 
+                                       value="${watchface.author || ''}" 
+                                       onchange="updateField(${index}, 'author', this.value)"
+                                       placeholder="输入作者">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">版本号</label>
+                                <input type="text" class="form-input" 
+                                       value="${watchface.version || '1.0.0'}" 
+                                       onchange="updateField(${index}, 'version', this.value)"
+                                       placeholder="例如: 1.0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">包名</label>
+                                <input type="text" class="form-input" 
+                                       value="${watchface.package || ''}" 
+                                       onchange="updateField(${index}, 'package', this.value)"
+                                       placeholder="例如: com.vivo.wf.watch103820">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">分类信息</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">分类</label>
+                                <select class="form-select" onchange="updateField(${index}, 'category', this.value)">
+                                    <option value="数字时显" ${watchface.category === '数字时显' ? 'selected' : ''}>数字时显</option>
+                                    <option value="简约风格" ${watchface.category === '简约风格' ? 'selected' : ''}>简约风格</option>
+                                    <option value="原表风格" ${watchface.category === '原表风格' ? 'selected' : ''}>原表风格</option>
+                                    <option value="科幻风格" ${watchface.category === '科幻风格' ? 'selected' : ''}>科幻风格</option>
+                                    <option value="其他" ${!watchface.category ? 'selected' : ''}>其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">类型</label>
+                                <select class="form-select" onchange="updateField(${index}, 'type', this.value)">
+                                    <option value="全家桶" ${watchface.type === '全家桶' ? 'selected' : ''}>全家桶</option>
+                                    <option value="全家桶" ${watchface.type === '定制' ? 'selected' : ''}>定制</option>
+                                    <option value="移植oppo" ${watchface.type === '移植oppo' ? 'selected' : ''}>移植oppo</option>
+                                    <option value="仿Apple" ${watchface.type === '仿Apple' ? 'selected' : ''}>仿Apple</option>
+                                    <option value="原创" ${watchface.type === '原创' || !watchface.type ? 'selected' : ''}>原创</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">适配设备</label>
+                                <input type="text" class="form-input" 
+                                       value="${watchface.device || 'vivo/iQOO watch GT1/2'}" 
+                                       onchange="updateField(${index}, 'device', this.value)"
+                                       placeholder="例如: vivo/iQOO watch GT1/2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">付费信息</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">是否付费</label>
+                                <select class="form-select" onchange="updateField(${index}, 'premium', this.value === 'true')">
+                                    <option value="false" ${!watchface.premium ? 'selected' : ''}>免费</option>
+                                    <option value="true" ${watchface.premium ? 'selected' : ''}>付费</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">价格</label>
+                                <input type="text" class="form-input" 
+                                       value="${watchface.price || '6元'}" 
+                                       onchange="updateField(${index}, 'price', this.value)"
+                                       placeholder="例如: 6元">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">功能特色</div>
+                        <div class="features-container" id="features-${index}">
+                            ${featuresHTML}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" class="form-input" 
+                                   id="new-feature-${index}" 
+                                   placeholder="输入功能特色，按回车添加"
+                                   onkeypress="if(event.key === 'Enter') addFeature(${index})">
+                            <button class="btn btn-outline" onclick="addFeature(${index})" style="white-space: nowrap;">
+                                添加
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">描述信息</div>
+                        <div class="form-group">
+                            <textarea class="form-input" 
+                                      rows="3" 
+                                      onchange="updateField(${index}, 'description', this.value)"
+                                      placeholder="输入表盘描述">${watchface.description || ''}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">图标链接</div>
+                        <div class="form-group">
+                            <input type="text" class="form-input" 
+                                   value="${watchface.icon || ''}" 
+                                   onchange="updateField(${index}, 'icon', this.value)"
+                                   placeholder="输入图标URL或base64数据">
+                        </div>
+                        ${watchface.icon ? `
+                        <div style="margin-top: 10px;">
+                            <label class="form-label">图标预览</label>
+                            <img src="${watchface.icon}" alt="图标预览" style="width: 60px; height: 60px; border-radius: 12px; margin-top: 5px;">
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 切换表盘表单显示
+        function toggleWatchfaceForm(index) {
+            const form = document.getElementById(`form-${index}`);
+            const card = document.getElementById(`watchface-${index}`);
+            const button = card.querySelector('.expand-btn');
+            
+            if (form.classList.contains('expanded')) {
+                form.classList.remove('expanded');
+                card.classList.remove('expanded');
+                button.textContent = '▼';
+            } else {
+                // 关闭其他打开的表单
+                document.querySelectorAll('.watchface-form.expanded').forEach(el => {
+                    el.classList.remove('expanded');
+                    el.closest('.watchface-card').classList.remove('expanded');
+                    el.closest('.watchface-card').querySelector('.expand-btn').textContent = '▼';
+                });
+                
+                form.classList.add('expanded');
+                card.classList.add('expanded');
+                button.textContent = '▲';
+            }
+        }
+        
+        // 更新字段
+        function updateField(index, field, value) {
+            if (watchfaceData[index]) {
+                watchfaceData[index][field] = value;
+                showMessage('字段已更新', 'info');
+            }
+        }
+        
+        // 添加功能特色
+        function addFeature(index) {
+            const input = document.getElementById(`new-feature-${index}`);
+            const feature = input.value.trim();
+            
+            if (feature) {
+                if (!watchfaceData[index].features) {
+                    watchfaceData[index].features = [];
+                }
+                
+                if (!watchfaceData[index].features.includes(feature)) {
+                    watchfaceData[index].features.push(feature);
+                    
+                    // 更新UI
+                    const container = document.getElementById(`features-${index}`);
+                    const tag = document.createElement('span');
+                    tag.className = 'feature-tag';
+                    tag.innerHTML = `
+                        ${feature}
+                        <span class="remove-feature" onclick="removeFeature(${index}, '${feature.replace(/'/g, "\\'")}')">×</span>
+                    `;
+                    container.appendChild(tag);
+                    
+                    input.value = '';
+                    showMessage('功能特色已添加', 'success');
+                } else {
+                    showMessage('功能特色已存在', 'warning');
+                }
+            }
+        }
+        
+        // 移除功能特色
+        function removeFeature(index, feature) {
+            if (watchfaceData[index] && watchfaceData[index].features) {
+                watchfaceData[index].features = watchfaceData[index].features.filter(f => f !== feature);
+                
+                // 重新渲染功能特色
+                const container = document.getElementById(`features-${index}`);
+                container.innerHTML = watchfaceData[index].features.map(f => `
+                    <span class="feature-tag">
+                        ${f}
+                        <span class="remove-feature" onclick="removeFeature(${index}, '${f.replace(/'/g, "\\'")}')">×</span>
+                    </span>
+                `).join('');
+            }
+        }
+        
+        // 添加新表盘
+        function addNewWatchface() {
+            const newId = 'watchface_' + Date.now();
+            const newWatchface = {
+                id: newId,
+                name: "新表盘",
+                package: "",
+                version: "1.0.0",
+                description: "",
+                author: "",
+                icon: "",
+                category: "数字时显",
+                type: "原创",
+                device: "vivo/iQOO watch GT1/2",
+                features: [],
+                premium: false,
+                price: "免费",
+                created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
+            };
+            
+            watchfaceData.unshift(newWatchface);
+            renderWatchfaceGrid();
+            showMessage('新表盘已添加', 'success');
+            
+            // 展开新添加的表盘
+            setTimeout(() => {
+                toggleWatchfaceForm(0);
+            }, 100);
+        }
+        
+        // 删除表盘
+        function deleteWatchface(index) {
+            if (confirm('确定要删除这个表盘吗？')) {
+                watchfaceData.splice(index, 1);
+                renderWatchfaceGrid();
+                showMessage('表盘已删除', 'success');
+            }
+        }
+        
+        // 切换模式
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // 更新标签
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.mode-tab[data-mode="${mode}"]`).classList.add('active');
+            
+            // 更新内容面板
+            document.querySelectorAll('.content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(`${mode === 'visual' ? 'visual' : 'code'}-editor`).classList.add('active');
+            
+            // 如果切换到代码模式，更新编辑器内容
+            if (mode === 'code') {
+                updateCodeEditor();
+            }
+        }
+        
+        // 更新代码编辑器
+        function updateCodeEditor() {
+            const editor = document.getElementById('json-code-editor');
+            editor.value = JSON.stringify(watchfaceData, null, 2);
+        }
+        
+        // 导入JSON数据
+        function importJson() {
+            document.getElementById('json-import-input').click();
+        }
+        
+       
+ function handleJsonImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let jsonString = e.target.result;
+            
+            // 1. 移除BOM字符
+            jsonString = jsonString.replace(/^\uFEFF/, '');
+            
+            // 2. 尝试直接解析（如果已经是有效JSON）
+            try {
+                const jsonData = JSON.parse(jsonString);
+                processImportData(jsonData);
+                return;
+            } catch (firstError) {
+                console.log('第一次解析失败，尝试修复...');
+            }
+            
+            // 3. 清理和修复常见的JSON问题
+            jsonString = cleanJsonString(jsonString);
+            
+            // 4. 再次尝试解析
+            try {
+                const jsonData = JSON.parse(jsonString);
+                processImportData(jsonData);
+            } catch (secondError) {
+                console.error('修复后仍然失败:', secondError);
+                showMessage('JSON导入失败！请确保文件格式正确：\n1. 使用有效的JSON格式\n2. 确保所有字符串用双引号包裹\n3. 移除所有JavaScript注释', 'error');
+            }
+            
+        } catch (error) {
+            console.error('文件读取失败:', error);
+            showMessage('文件读取失败: ' + error.message, 'error');
+        }
+    };
+    
+    reader.readAsText(file, 'UTF-8');
+}
+
+// JSON清理函数
+function cleanJsonString(jsonString) {
+    return jsonString
+        // 移除行注释
+        .replace(/\/\/.*$/gm, '')
+        // 移除块注释
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        // 修复未闭合的字符串
+        .replace(/:\s*"([^"]*?)(?=\s*[,\]}])/g, ':"$1"')
+        // 修复未加引号的属性名
+        .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+        // 移除控制字符（除了\t, \n, \r）
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+        // 修复尾随逗号
+        .replace(/,(\s*[}\]])/g, '$1')
+        // 标准化换行符
+        .replace(/\r\n|\r/g, '\n')
+        // 确保JSON以正确结构开始和结束
+        .replace(/^\s*([\s\S]*?)\s*$/, '$1');
+}
+
+// 处理导入的数据
+function processImportData(jsonData) {
+    // 兼容不同格式的数据
+    if (Array.isArray(jsonData)) {
+        watchfaceData = jsonData;
+    } else if (jsonData.watchfaces && Array.isArray(jsonData.watchfaces)) {
+        watchfaceData = jsonData.watchfaces;
+    } else if (jsonData.meta && jsonData.watchfaces) {
+        watchfaceData = jsonData.watchfaces;
+    } else {
+        showMessage('无法识别的JSON格式', 'warning');
+        return;
+    }
+    
+    // 验证和清理数据
+    watchfaceData = watchfaceData.filter(item => {
+        // 确保每个表盘有必要的字段
+        if (!item.name) {
+            console.warn('发现未命名表盘，已跳过:', item);
+            return false;
+        }
+        return true;
+    }).map(item => {
+        // 确保类型字段存在
+        if (!item.type) {
+            item.type = '原创';
+        }
+        // 确保设备字段存在
+        if (!item.device) {
+            item.device = '通用机型';
+        }
+        // 确保features是数组
+        if (!Array.isArray(item.features)) {
+            item.features = [];
+        }
+        return item;
+    });
+    
+    renderWatchfaceGrid();
+    showMessage(`成功导入 ${watchfaceData.length} 个表盘数据`, 'success');
+}
+        
+        // 处理代码模式的JSON导入
+        function importCodeJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let jsonString = e.target.result;
+                    
+                    // 修复：移除JSON中的非法控制字符
+                    jsonString = jsonString.replace(/\\u2028/g, '\\n')
+                                         .replace(/\\u2029/g, '\\n')
+                                         .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+                                         .replace(/\/\/.*$/gm, '');
+                    
+                    const editor = document.getElementById('json-code-editor');
+                    editor.value = jsonString;
+                    showMessage('JSON文件已加载到编辑器', 'success');
+                    
+                } catch (error) {
+                    showMessage('文件读取失败: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // 应用代码模式的修改
+        function applyCodeChanges() {
+            try {
+                const editor = document.getElementById('json-code-editor');
+                const jsonString = editor.value;
+                
+                // 修复：移除JSON中的非法控制字符
+                const cleanJsonString = jsonString.replace(/\\u2028/g, '\\n')
+                                                .replace(/\\u2029/g, '\\n')
+                                                .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+                                                .replace(/\/\/.*$/gm, '');
+                
+                const jsonData = JSON.parse(cleanJsonString);
+                
+                // 兼容不同格式的数据
+                if (Array.isArray(jsonData)) {
+                    watchfaceData = jsonData;
+                } else if (jsonData.watchfaces && Array.isArray(jsonData.watchfaces)) {
+                    watchfaceData = jsonData.watchfaces;
+                } else if (jsonData.meta && jsonData.watchfaces) {
+                    watchfaceData = jsonData.watchfaces;
+                }
+                
+                renderWatchfaceGrid();
+                showMessage('修改已应用', 'success');
+                
+            } catch (error) {
+                showMessage('JSON解析错误: ' + error.message, 'error');
+            }
+        }
+        
+        // 保存代码模式的修改
+        function saveCodeChanges() {
+            applyCodeChanges();
+            saveAllChanges();
+        }
+        
+        // 复制JSON
+        function copyJson() {
+            const editor = document.getElementById('json-code-editor');
+            editor.select();
+            
+            try {
+                navigator.clipboard.writeText(editor.value)
+                    .then(() => {
+                        const copySuccess = document.getElementById('copy-success');
+                        copySuccess.classList.add('show');
+                        setTimeout(() => {
+                            copySuccess.classList.remove('show');
+                        }, 2000);
+                        showMessage('JSON已复制到剪贴板', 'success');
+                    })
+                    .catch(err => {
+                        document.execCommand('copy');
+                        showMessage('JSON已复制到剪贴板', 'success');
+                    });
+            } catch (err) {
+                document.execCommand('copy');
+                showMessage('JSON已复制到剪贴板', 'success');
+            }
+        }
+        
+        // 格式化JSON
+        function formatJson() {
+            const editor = document.getElementById('json-code-editor');
+            try {
+                const jsonData = JSON.parse(editor.value);
+                editor.value = JSON.stringify(jsonData, null, 2);
+                showMessage('JSON格式化完成', 'success');
+            } catch (error) {
+                showMessage('JSON格式错误，无法格式化', 'error');
+            }
+        }
+        
+        // 处理RPK文件上传
+        function processRPK() {
+            document.getElementById('rpk-import-input').click();
+        }
+        
+        function handleRpkUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            processRpkFile(file);
+        }
+        
+        // 初始化RPK拖放区域
+        function initRPKDropZone() {
+            const dropZone = document.getElementById('rpk-drop-zone');
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#007aff';
+                dropZone.style.background = 'rgba(0, 122, 255, 0.05)';
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = '#d2d2d7';
+                dropZone.style.background = '#f8f9fa';
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#d2d2d7';
+                dropZone.style.background = '#f8f9fa';
+                
+                const file = e.dataTransfer.files[0];
+                if (file && file.name.endsWith('.rpk')) {
+                    processRpkFile(file);
+                } else {
+                    showMessage('请选择RPK文件', 'warning');
+                }
+            });
+        }
+        
+        // 处理RPK文件
+        async function processRpkFile(file) {
+            try {
+                showMessage('正在解析RPK文件...', 'info');
+                
+                const zip = await JSZip.loadAsync(file);
+                const fileNames = Object.keys(zip.files);
+                
+                // 查找配置文件和图标
+                let configFile = null;
+                let iconFile = null;
+                
+                for (const fileName of fileNames) {
+                    const lowerName = fileName.toLowerCase();
+                    if (lowerName.includes('manifest') || lowerName.includes('config') || lowerName.endsWith('.json')) {
+                        configFile = fileName;
+                    } else if (lowerName.includes('icon') || lowerName.endsWith('.png') || lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+                        iconFile = fileName;
+                    }
+                }
+                
+                // 创建新表盘
+                const newId = 'rpk_' + Date.now();
+                const newWatchface = {
+                    id: newId,
+                    name: file.name.replace('.rpk', ''),
+                    package: file.name.replace('.rpk', ''),
+                    version: "1.0.0",
+                    description: "从RPK文件导入的表盘",
+                    author: "未知作者",
+                    icon: "",
+                    category: "数字时显",
+                    type: "原创",
+                    device: "vivo/iQOO watch GT1/2",
+                    features: ["RPK格式"],
+                    premium: false,
+                    price: "免费",
+                    created_at: new Date().toISOString().replace('T', ' ').substring(0, 19)
+                };
+                
+                // 尝试读取配置文件
+                if (configFile) {
+                    try {
+                        const configContent = await zip.file(configFile).async('string');
+                        const config = JSON.parse(configContent);
+                        
+                        if (config.name) newWatchface.name = config.name;
+                        if (config.author) newWatchface.author = config.author;
+                        if (config.version) newWatchface.version = config.version;
+                        if (config.description) newWatchface.description = config.description;
+                        if (config.device) newWatchface.device = config.device;
+                        if (config.category) newWatchface.category = config.category;
+                        if (config.type) newWatchface.type = config.type;
+                        if (config.features) newWatchface.features = config.features;
+                        if (config.premium !== undefined) newWatchface.premium = config.premium;
+                        if (config.price) newWatchface.price = config.price;
+                        
+                    } catch (e) {
+                        console.warn('配置文件解析失败:', e);
+                    }
+                }
+                
+                // 尝试读取图标
+                if (iconFile) {
+                    try {
+                        const iconBlob = await zip.file(iconFile).async('blob');
+                        const reader = new FileReader();
+                        reader.onload = function() {
+                            newWatchface.icon = reader.result;
+                            watchfaceData.unshift(newWatchface);
+                            renderWatchfaceGrid();
+                            showMessage('RPK文件解析成功，表盘已添加', 'success');
+                        };
+                        reader.readAsDataURL(iconBlob);
+                        return;
+                    } catch (e) {
+                        console.warn('图标读取失败:', e);
+                    }
+                }
+                
+                watchfaceData.unshift(newWatchface);
+                renderWatchfaceGrid();
+                showMessage('RPK文件解析成功，表盘已添加', 'success');
+                
+            } catch (error) {
+                showMessage('RPK文件解析失败: ' + error.message, 'error');
+                console.error('RPK解析错误:', error);
+            }
+        }
+        
+        // 预览数据
+        function previewData() {
+            const preview = {
+                meta: {
+                    version: "2.0",
+                    export_date: new Date().toISOString(),
+                    count: watchfaceData.length,
+                    note: "从图形化编辑器导出"
+                },
+                watchfaces: watchfaceData
+            };
+            
+            const previewString = JSON.stringify(preview, null, 2);
+            
+            document.getElementById('preview-title').textContent = '数据预览';
+            document.getElementById('preview-subtitle').textContent = `共 ${watchfaceData.length} 个表盘`;
+            document.getElementById('preview-content').textContent = previewString;
+            
+            const previewCard = document.getElementById('preview-card');
+            previewCard.classList.add('active');
+            
+            // 滚动到预览区域
+            previewCard.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 复制预览内容
+        function copyPreview() {
+            const content = document.getElementById('preview-content').textContent;
+            
+            try {
+                navigator.clipboard.writeText(content)
+                    .then(() => {
+                        showMessage('预览内容已复制到剪贴板', 'success');
+                    })
+                    .catch(err => {
+                        const textArea = document.createElement('textarea');
+                        textArea.value = content;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        showMessage('预览内容已复制到剪贴板', 'success');
+                    });
+            } catch (err) {
+                const textArea = document.createElement('textarea');
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showMessage('预览内容已复制到剪贴板', 'success');
+            }
+        }
+        
+        // 隐藏预览
+        function hidePreview() {
+            document.getElementById('preview-card').classList.remove('active');
+        }
+        
+        // 保存所有修改
+        function saveAllChanges() {
+            try {
+                const dataToSave = {
+                    meta: {
+                        version: "2.0",
+                        save_date: new Date().toISOString(),
+                        count: watchfaceData.length,
+                        note: "从图形化编辑器保存"
+                    },
+                    watchfaces: watchfaceData
+                };
+                
+                localStorage.setItem('watchface_data', JSON.stringify(dataToSave));
+                showMessage('所有修改已保存到本地存储', 'success');
+                
+                // 如果需要，可以导出到文件
+                exportData();
+                
+            } catch (error) {
+                showMessage('保存失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 导出数据
+        function exportData() {
+            try {
+                const dataToExport = {
+                    meta: {
+                        version: "2.0",
+                        export_date: new Date().toISOString(),
+                        count: watchfaceData.length,
+                        note: "包含新增的type字段"
+                    },
+                    watchfaces: watchfaceData
+                };
+                
+                const jsonString = JSON.stringify(dataToExport, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `watchface_data_${new Date().getTime()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showMessage('数据导出成功', 'success');
+                
+            } catch (error) {
+                showMessage('导出失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 返回首页
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+        
+        // 显示消息
+        function showMessage(message, type = 'info') {
+            // 创建一个简单的toast通知
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#34c759' : type === 'error' ? '#ff3b30' : type === 'warning' ? '#ff9500' : '#007aff'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+            
+            // 添加动画样式
+            if (!document.getElementById('toast-animations')) {
+                const style = document.createElement('style');
+                style.id = 'toast-animations';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+    </script>
+</body>
+</html>

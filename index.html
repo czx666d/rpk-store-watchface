@@ -642,6 +642,77 @@
             margin-top: 8px;
         }
         
+        /* 新增样式 - 登录和管理页面 */
+        .login-section {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .login-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #515154;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
+        /* 新筛选器样式 */
+        .type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+        
+        .type-组合包 {
+            background: linear-gradient(135deg, #ff9500, #ff5e3a);
+            color: white;
+        }
+        
+        .type-移植oppo {
+            background: linear-gradient(135deg, #34c759, #30b84c);
+            color: white;
+        }
+        
+        .type-仿Apple {
+            background: linear-gradient(135deg, #007aff, #0056cc);
+            color: white;
+        }
+        
+        .type-原创 {
+            background: linear-gradient(135deg, #5856d6, #af52de);
+            color: white;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 768px) {
             .filter-toolbar {
@@ -744,6 +815,14 @@
                     </select>
                 </div>
                 
+                <!-- 新增类型筛选器 -->
+                <div class="filter-group">
+                    <div class="filter-label">类型筛选</div>
+                    <select class="filter-select" id="type-filter">
+                        <option value="all">全部类型</option>
+                    </select>
+                </div>
+                
                 <div class="filter-group">
                     <div class="filter-label">排序方式</div>
                     <select class="filter-select" id="sort-by">
@@ -830,6 +909,23 @@
                 </ul>
                 <p style="color: #515154; line-height: 1.5;">所有提交的表盘都会经过审核，审核通过后会在商店中展示。</p>
             </div>
+            
+            <!-- 登录区域 -->
+            <div class="login-section" id="login-section">
+                <h3>🔐 管理员登录</h3>
+                <div class="form-group">
+                    <label class="form-label">账户</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="请输入账户" value="123456">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="请输入密码" value="123456">
+                </div>
+                <div id="login-error" class="error-message"></div>
+                <button class="btn btn-primary" onclick="handleLogin()" style="width: 100%;">登录</button>
+            </div>
+            
+            <!-- 注意：管理员面板已删除，登录后将跳转到 admin.html -->
         </div>
     </div>
 
@@ -867,1397 +963,793 @@
     <div id="toast-container"></div>
 
     <script>
-        // 在 <script> 标签的开头添加
-const CLOUD_FUNCTION_API = 'https://你的云函数地址';
-
-// 然后修改 handlePurchase 函数
-async function handlePurchase(appId, appName) {
-  try {
-    showToast('正在创建订单...', 'info');
-    
-    const response = await fetch(`${CLOUD_FUNCTION_API}/create-order`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        appId: appId,
-        appName: appName,
-        userId: 'user_' + Date.now(),
-        timestamp: new Date().toISOString()
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      showPaymentModal(result.orderInfo, result.orderId);
-    } else {
-      throw new Error(result.message);
-    }
-  } catch (error) {
-    showToast('创建订单失败: ' + error.message, 'error');
-  }
-}
-
-// 添加支付弹窗函数
-function showPaymentModal(orderInfo, orderId) {
-  // 这里写支付界面的HTML代码
-}
-    // 设置当前日期
-    document.getElementById('current-date').textContent = new Date().toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    // 状态管理
-    let appsData = [];
-    
-    // 筛选和排序状态
-    let currentView = 'grid'; // 'grid' 或 'list'
-    let currentPage = 1;
-    let itemsPerPage = 24;
-    let filteredApps = [];
-    let searchTimeout = null;
-    
-    // 筛选状态
-    let currentCategory = 'all';
-    let sortBy = 'created_at';
-    let sortOrder = 'desc';
-
-    // 配置
-    const CONFIG = {
-        defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='
-    };
-
-    // 示例表盘数据 - 添加付费字段
-    const exampleApps = [
-        {
-            "id": "01",
-            "name": "全境封锁",
-            "package": "com.vivo.wf.watch103820",
-            "version": "1.0.0",
-            "description": "移植全境封锁表盘，适配圆表，有动态背景和静态背景两种版本，赞助后进群获取全部表盘",
-            "author": "新生",
-            "icon": "icons/qjfs.png",
-            "link": "https://raw.githubusercontent.com/czx666d/rpk-store-watchface/main/watchfacerpk/com.byte.just_1745097061384.rpk",
-            "created_at": "2026-02-04 16:41:48",
-            "isLocal": false,
-            "category": "原表风格",
-            "device": "vivo/iQOO watch GT1/2",
-            "features": ["动态背景", "静态背景", "时间显示", "日期显示"],
-            "premium": true, // 付费表盘
-            "price": "6元" // 价格
-        },
-        {
-            "id": "02",
-            "name": "极光v1",
-            "package": "com.vivo.wf.watch103846",
-            "version": "1.0.0",
-            "description": "适配方表圆表，由禾芒新屿工作室-V3制作，赞助表盘群即可获得。",
-            "author": "Viper3",
-            "icon": "icons/jg1.png",
-            "link": "https://raw.githubusercontent.com/czx666d/rpk-store-watchface/main/watchfacerpk/com.byte.just_1245097061384.rpk",
-            "created_at": "2026-02-03 03:04:52",
-            "isLocal": false,
-            "category": "简约风格",
-            "device": "vivo/iQOO watch GT1/2/3",
-            "features": ["数字时间", "日期显示", "电量显示", "极光特效"],
-            "premium": false, // 免费表盘
-            "price": "免费"
-        },
-        {
-            "id": "03",
-            "name": "一日火星",
-            "package": "com.vivo.wf.watch103833",
-            "version": "1.2.0",
-            "description": "由禾芒新屿工作室-Snowyyy制作，火星主题表盘",
-            "author": "Snowyyy",
-            "icon": "icons/yrhx.png",
-            "link": "https://example.com/watchfacerpk/digital_1.2.0.rpk",
-            "created_at": "2026-01-15 10:20:30",
-            "isLocal": false,
-            "category": "科幻风格",
-            "device": "vivo/iQOO watch GT1/2",
-            "features": ["火星主题", "数字时间", "日期显示", "天气温度"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "04",
-            "name": "一日地球",
-            "package": "com.vivo.wf.watch103828",
-            "version": "1.0.0.3",
-            "description": "由禾芒新屿工作室-Snowyyy制作，赞助原创组合包即可获得。",
-            "author": "表盘设计师",
-            "icon": "icons/dq.png",
-            "link": "https://example.com/watchfacerpk/mechanical_2.0.0.rpk",
-            "created_at": "2026-02-02 22:23:44",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "vivo/iQOOwatchGT1/2",
-            "features": ["原创", "数字时显", "日期显示"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "05",
-            "name": "佩露薇利",
-            "package": "com.vivo.wf.watch103732",
-            "version": "1.0.0.8",
-            "description": "由Arleno定制公开免费，由禾芒新屿工作室-新生制作。",
-            "author": "Viper3",
-            "icon": "icons/plwl.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-02 22:06:57",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "vivo/iQOO GT1/2",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "06",
-            "name": "燎原",
-            "package": "com.vivo.wf.watch103813",
-            "version": "1.0.0.1",
-            "description": "由禾芒新屿工作室-Snowyyy制作",
-            "author": "Viper3",
-            "icon": "icons/ly.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-02 12:39:35",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "vivo/iQOO GT1/2",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "07",
-            "name": "回溯-圆表",
-            "package": "com.vivo.wf.watch103804",
-            "version": "1.0.0.3",
-            "description": "由禾芒新屿工作室制作，在适配大部分表盘给圆表，付费进群获取全部。",
-            "author": "Viper3",
-            "icon": "icons/hs.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-02 12:39:35",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "vivo/iQOOwatch3、vivo/iQOOwatch5",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "08",
-            "name": "星空-方表",
-            "package": "com.vivo.wf.watch103801",
-            "version": "1.0.0.4",
-            "description": "由禾芒新屿工作室-Snowyyy根据Apple Watch表盘渲染图制作的表盘。",
-            "author": "Viper3",
-            "icon": "icons/xk.jpg",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-02 12:39:35",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "09",
-            "name": "守岸人2.0",
-            "package": "com.vivo.wf.watch103752",
-            "version": "1.0.0.4",
-            "description": "由禾芒新屿工作室制作，付费即可进群获取，注:不是单个表盘6r，而是全部我们所制作的表盘。循环动态，熄屏显示",
-            "author": "Viper3",
-            "icon": "icons/s2.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-01 15:00:28",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "10",
-            "name": "溯",
-            "package": "com.vivo.wf.watch103753",
-            "version": "1.0.0.7",
-            "description": "由禾芒新屿工作室制作，付费即可进群获取，付费进群获取，循环动态示",
-            "author": "Viper3",
-            "icon": "icons/s.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-01 15:00:28",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "11",
-            "name": "AE86",
-            "package": "com.vivo.wf.watch103747",
-            "version": "1.0.0.7",
-            "description": "由禾芒新屿工作室制作，循环动态，熄屏显示",
-            "author": "Viper3",
-            "icon": "icons/ae86.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-02-01 12:43:56",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "12",
-            "name": "蕾塞",
-            "package": "com.vivo.wf.watch103719",
-            "version": "1.0.0.2",
-            "description": "由禾芒新屿工作室制作，循环动态",
-            "author": "Viper3",
-            "icon": "icons/fnn.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-31 22:47:22",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "13",
-            "name": "颜绯",
-            "package": "com.example.yanfei",
-            "version": "1.0.0.7",
-            "description": "动态循环，如若表盘未显示，请重启表盘",
-            "author": "新生",
-            "icon": "icons/yf.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-31 01:29:43",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "14",
-            "name": "明日香",
-            "package": "com.example.mingrixiang",
-            "version": "1.0.0",
-            "description": "循环动态，GT1 2均可使用，如若表盘不显示，请重启手表",
-            "author": "新生",
-            "icon": "icons/mrx.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-31 01:29:43",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "15",
-            "name": "芦苇JK",
-            "package": "com.example.YYY",
-            "version": "1.0.0",
-            "description": "循环动态，GT1 2均可使用，如若表盘不显示，请重启手表",
-            "author": "新生",
-            "icon": "icons/lwjk.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-31 01:29:43",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "16",
-            "name": "守岸人",
-            "package": "com.example.shouanren",
-            "version": "1.0.0",
-            "description": "动态循环（付费进表盘群获取）",
-            "author": "Viper3",
-            "icon": "icons/s1.jpg",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-31 01:29:43",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "17",
-            "name": "岚火",
-            "package": "com.example.shouanren",
-            "version": "1.0.0",
-            "description": "循环动态眨眼，配合orbitV安装",
-            "author": "Viper3",
-            "icon": "icons/lh.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-31 01:29:43",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "18",
-            "name": "momo",
-            "package": "com.vivo.wf.watch103625",
-            "version": "1.0.0",
-            "description": "原创momo猫",
-            "author": "新生",
-            "icon": "icons/momo.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "19",
-            "name": "沙琪玛2.0",
-            "package": "com.vivo.wf.watch103626",
-            "version": "1.0.0",
-            "description": "动态表盘，支持点击播放，旋转表冠播放，息屏显示。",
-            "author": "新生",
-            "icon": "icons/sqm2.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "20",
-            "name": "友商是sb",
-            "package": "woshileijun",
-            "version": "1.0.0",
-            "description": "适配方表，使用流量安装",
-            "author": "X",
-            "icon": "icons/lj.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "21",
-            "name": "银狼",
-            "package": "yinlang",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "X",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "22",
-            "name": "秤亚津子",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表",
-            "author": "小米矿石",
-            "icon": "icons/cyjz.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "23",
-            "name": "一键三连",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "24",
-            "name": "雪之下雪乃",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/xn.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "25",
-            "name": "虚无",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "26",
-            "name": "阿玛特拉斯",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "27",
-            "name": "无敌",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "28",
-            "name": "四姑娘山",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "29",
-            "name": "斯卡蒂",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "30",
-            "name": "湿透",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "31",
-            "name": "李诗雅",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "32",
-            "name": "蕾塞cos",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "33",
-            "name": "蕾塞cos长动态版",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "34",
-            "name": "渐变大字体",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "35",
-            "name": "加州",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "36",
-            "name": "极简扫秒",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "37",
-            "name": "古月方源",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": true,
-            "price": "6元"
-        },
-        {
-            "id": "38",
-            "name": "电锯人",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "39",
-            "name": "纯粹扫秒",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/ty.png",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-        {
-            "id": "40",
-            "name": "白凝冰",
-            "package": "undefined",
-            "version": "1.2.0",
-            "description": "适配方表，使用流量安装",
-            "author": "新生",
-            "icon": "icons/bnb.jpg",
-            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
-            "created_at": "2026-01-30 04:19:58",
-            "isLocal": false,
-            "category": "数字时显",
-            "device": "方表通用",
-            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
-            "premium": false,
-            "price": "免费"
-        },
-    ];
-
-    // 初始化
-    document.addEventListener('DOMContentLoaded', async () => {
-        initializeEventListeners();
-        await initData();
-    });
-
-    // 初始化数据
-    async function initData() {
-        try {
-            document.getElementById('search-stats').textContent = '正在加载表盘数据...';
-            
-            appsData = [...exampleApps];
-            filteredApps = [...appsData];
-            
-            // 初始化筛选选项
-            initFilterOptions();
-            
-            updateSearchStats();
-            setupSearchAndPagination();
-            
-            showToast('表盘数据加载完成', 'success');
-        } catch (error) {
-            showToast('数据加载失败: ' + error.message, 'error');
-            document.getElementById('search-stats').textContent = '数据加载失败';
-            console.error('初始化错误:', error);
-        }
-    }
-
-    // 初始化筛选选项
-    function initFilterOptions() {
-        // 收集所有分类
-        const categories = new Set(['全部分区']);
-        
-        appsData.forEach(app => {
-            if (app.category) categories.add(app.category);
+        // 设置当前日期
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
         
-        // 填充分类筛选
-        const categoryFilter = document.getElementById('category-filter');
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category === '全部分区' ? 'all' : category;
-            option.textContent = category;
-            categoryFilter.appendChild(option);
+        // 状态管理
+        let appsData = [];
+        
+        // 筛选和排序状态
+        let currentView = 'grid';
+        let currentPage = 1;
+        let itemsPerPage = 24;
+        let filteredApps = [];
+        let searchTimeout = null;
+        
+        // 筛选状态
+        let currentCategory = 'all';
+        let currentType = 'all'; // 新增：类型筛选
+        let sortBy = 'created_at';
+        let sortOrder = 'desc';
+
+        // 配置
+        const CONFIG = {
+            defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='
+        };
+
+        // 示例表盘数据 - 添加type字段
+        const exampleApps = [
+        
+        ];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            initializeEventListeners();
+            await initData();
         });
-    }
 
-    // 更新搜索统计
-    function updateSearchStats() {
-        const searchStats = document.getElementById('search-stats');
-        const searchInput = document.getElementById('search-input');
-        const searchTerm = searchInput ? searchInput.value.trim() : '';
-        
-        let statsText = `找到 ${filteredApps.length} 个表盘`;
-        
-        if (currentCategory !== 'all') {
-            statsText += `，分区：${currentCategory}`;
-        }
-        
-        if (searchTerm) {
-            statsText += `，搜索"${searchTerm}"`;
-        }
-        
-        searchStats.textContent = statsText;
-        
-        if (filteredApps.length === 0) {
-            searchStats.textContent = '没有找到符合条件的表盘，请尝试调整筛选条件';
-        }
-    }
-
-    // 设置搜索和分页功能
-    function setupSearchAndPagination() {
-        // 搜索功能
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.trim();
+        // 初始化数据 - 从 localStorage 读取数据或使用示例数据
+        async function initData() {
+            try {
+                document.getElementById('search-stats').textContent = '正在加载表盘数据...';
                 
-                if (searchTimeout) {
-                    clearTimeout(searchTimeout);
+                // 尝试从 localStorage 读取数据
+                const savedData = localStorage.getItem('watchface_data');
+                if (savedData) {
+                    try {
+                        const parsedData = JSON.parse(savedData);
+                        // 检查数据格式
+                        if (Array.isArray(parsedData)) {
+                            appsData = parsedData;
+                        } else if (parsedData.watchfaces && Array.isArray(parsedData.watchfaces)) {
+                            appsData = parsedData.watchfaces;
+                        } else {
+                            appsData = [...exampleApps];
+                        }
+                    } catch (e) {
+                        console.warn('解析本地存储数据失败，使用示例数据', e);
+                        appsData = [...exampleApps];
+                    }
+                } else {
+                    appsData = [...exampleApps];
                 }
                 
-                searchTimeout = setTimeout(() => {
-                    applyFiltersAndSort();
-                    currentPage = 1;
-                    renderApps();
-                    updateSearchStats();
-                }, 300);
+                filteredApps = [...appsData];
+                
+                // 初始化筛选选项
+                initFilterOptions();
+                
+                updateSearchStats();
+                setupSearchAndPagination();
+                
+                showToast('表盘数据加载完成', 'success');
+            } catch (error) {
+                showToast('数据加载失败: ' + error.message, 'error');
+                document.getElementById('search-stats').textContent = '数据加载失败';
+                console.error('初始化错误:', error);
+            }
+        }
+
+        // 初始化筛选选项
+        function initFilterOptions() {
+            // 收集所有分类
+            const categories = new Set(['全部分区']);
+            const types = new Set(['全家桶','定制', '移植oppo', '仿Apple', '原创']);
+            
+            appsData.forEach(app => {
+                if (app.category) categories.add(app.category);
+                if (app.type) types.add(app.type);
+            });
+            
+            // 填充分类筛选
+            const categoryFilter = document.getElementById('category-filter');
+            categoryFilter.innerHTML = '<option value="all">全部分区</option>';
+            categories.forEach(category => {
+                if (category !== '全部分区') {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categoryFilter.appendChild(option);
+                }
+            });
+            
+            // 填充类型筛选
+            const typeFilter = document.getElementById('type-filter');
+            typeFilter.innerHTML = '<option value="all">全部类型</option>';
+            types.forEach(type => {
+                if (type !== '全部类型') {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    typeFilter.appendChild(option);
+                }
             });
         }
-        
-        // 筛选器变化
-        document.getElementById('category-filter')?.addEventListener('change', (e) => {
-            currentCategory = e.target.value;
-            applyFiltersAndSort();
-            currentPage = 1;
-            renderApps();
-            updateSearchStats();
-        });
-        
-        document.getElementById('sort-by')?.addEventListener('change', (e) => {
-            sortBy = e.target.value;
-            applyFiltersAndSort();
-            currentPage = 1;
-            renderApps();
-        });
-        
-        document.getElementById('sort-order')?.addEventListener('change', (e) => {
-            sortOrder = e.target.value;
-            applyFiltersAndSort();
-            currentPage = 1;
-            renderApps();
-        });
-        
-        // 视图切换 - 改为下拉菜单切换
-        document.getElementById('view-select')?.addEventListener('change', function() {
-            currentView = this.value;
-            
-            // 显示当前视图
-            switchView(currentView);
-            
-            // 显示切换提示
-            showToast(`已切换到${currentView === 'grid' ? '方格' : '列表'}视图`, 'info');
-        });
-        
-        // 重置筛选按钮
-        document.getElementById('reset-filters')?.addEventListener('click', () => {
-            document.getElementById('category-filter').value = 'all';
-            document.getElementById('sort-by').value = 'created_at';
-            document.getElementById('sort-order').value = 'desc';
-            document.getElementById('search-input').value = '';
-            document.getElementById('view-select').value = 'grid';
-            
-            currentCategory = 'all';
-            sortBy = 'created_at';
-            sortOrder = 'desc';
-            currentView = 'grid';
-            
-            applyFiltersAndSort();
-            currentPage = 1;
-            renderApps();
-            updateSearchStats();
-            switchView('grid');
-            showToast('筛选条件已重置', 'success');
-        });
-        
-        // 分页按钮
-        document.getElementById('prev-page')?.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderApps();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        });
-        
-        document.getElementById('next-page')?.addEventListener('click', () => {
-            const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderApps();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        });
-        
-        // 初始应用筛选和排序
-        applyFiltersAndSort();
-        renderApps();
-    }
 
-    // 应用筛选和排序
-    function applyFiltersAndSort() {
-        // 先根据搜索词筛选
-        const searchInput = document.getElementById('search-input');
-        const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
-        
-        filteredApps = appsData.filter(app => {
-            // 搜索过滤
-            if (searchTerm) {
-                const searchFields = [
-                    app.name,
-                    app.author,
-                    app.description,
-                    app.category
-                ].filter(Boolean).join(' ').toLowerCase();
-                
-                if (!searchFields.includes(searchTerm)) {
-                    return false;
-                }
-            }
-            
-            // 分类过滤
-            if (currentCategory !== 'all' && app.category !== currentCategory) {
-                return false;
-            }
-            
-            return true;
-        });
-        
-        // 排序
-        sortApps();
-    }
-
-    // 排序应用
-    function sortApps() {
-        filteredApps.sort((a, b) => {
-            let aValue, bValue;
-            
-            switch (sortBy) {
-                case 'name':
-                    aValue = a.name || '';
-                    bValue = b.name || '';
-                    break;
-                case 'author':
-                    aValue = a.author || '';
-                    bValue = b.author || '';
-                    break;
-                case 'created_at':
-                default:
-                    aValue = new Date(a.created_at || 0).getTime();
-                    bValue = new Date(b.created_at || 0).getTime();
-                    break;
-            }
-            
-            if (sortOrder === 'asc') {
-                return aValue > bValue ? 1 : -1;
-            } else {
-                return aValue < bValue ? 1 : -1;
-            }
-        });
-    }
-
-    // 切换视图
-    function switchView(view) {
-        currentView = view;
-        
-        // 显示/隐藏对应的视图容器
-        const gridView = document.getElementById('app-grid-view');
-        const listView = document.getElementById('app-list-view');
-        
-        if (view === 'grid') {
-            gridView.style.display = 'grid';
-            listView.style.display = 'none';
-        } else {
-            gridView.style.display = 'none';
-            listView.style.display = 'flex';
-        }
-        
-        // 重新渲染应用
-        renderApps();
-    }
-
-    // 渲染应用卡片
-    function renderAppCard(app, container = null) {
-        if (!container) container = document.getElementById('app-grid-view');
-        
-        const card = document.createElement('div');
-        card.className = 'app-card';
-        card.dataset.id = app.id;
-        
-        const realSrc = app.icon || CONFIG.defaultIcon;
-        
-        // 列表视图不做任何改变，只在详情页改变
-        card.innerHTML = `
-            <img class="app-icon" src="${realSrc}" 
-                 alt="${app.name}" 
-                 onerror="this.src='${CONFIG.defaultIcon}'">
-            <h3 class="app-name">${app.name}</h3>
-            <div class="app-meta">
-                <p>${app.author || '匿名用户'}</p>
-                ${app.category ? `<p>${app.category}</p>` : ''}
-            </div>
-        `;
-        
-        card.addEventListener('click', () => showAppDetail(app));
-        container.appendChild(card);
-    }
-    
-    // 渲染列表项
-    function renderAppListItem(app, container) {
-        const item = document.createElement('div');
-        item.className = 'app-list-item';
-        item.dataset.id = app.id;
-        
-        const realSrc = app.icon || CONFIG.defaultIcon;
-        
-        // 列表视图不做任何改变，只在详情页改变
-        item.innerHTML = `
-            <img class="app-icon" src="${realSrc}" 
-                 alt="${app.name}" 
-                 onerror="this.src='${CONFIG.defaultIcon}'">
-            <div class="app-info">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                    <h3 class="app-name">${app.name}</h3>
-                    <span style="background: #f5f0ff; color: #5856d6; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
-                        ${app.category || '未分类'}
-                    </span>
-                </div>
-                <div class="app-meta">
-                    <span>作者: ${app.author || '匿名用户'}</span>
-                    <span>版本: ${app.version || '1.0.0'}</span>
-                    ${app.device ? `<span style="color: #34c759;">📱 ${app.device}</span>` : ''}
-                </div>
-                <p style="color: #515154; font-size: 14px; margin-top: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                    ${app.description || '暂无描述'}
-                </p>
-            </div>
-        `;
-        
-        item.addEventListener('click', () => showAppDetail(app));
-        container.appendChild(item);
-    }
-
-    // 显示应用详情
-    async function showAppDetail(app) {
-        const modal = document.getElementById('detail-modal');
-        const modalBody = document.getElementById('modal-body');
-        
-        // 格式化日期
-        const formattedDate = app.created_at ? 
-            new Date(app.created_at).toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '未知';
-        
-        // 根据是否付费显示不同的按钮
-        let actionButton = '';
-        if (app.premium) {
-            // 付费表盘：显示购买按钮
-            actionButton = `
-                <button class="btn btn-premium" onclick="handlePurchase('${app.id}', '${app.name}')" style="flex: 1;">
-                    <span>购买表盘</span>
-                    <span class="premium-price">${app.price || '6元'}</span>
-                </button>
-            `;
-        } else if (app.link) {
-            // 免费表盘且有链接：显示下载按钮
-            actionButton = `
-                <a href="${app.link}" class="btn btn-primary" target="_blank" style="flex: 1;">
-                    下载表盘
-                </a>
-            `;
-        }
-        
-        modalBody.innerHTML = `
-            <div class="detail-header">
-                <img src="${app.icon || CONFIG.defaultIcon}" 
-                     alt="${app.name}" class="detail-icon">
-                <h2 class="detail-title">${app.name}</h2>
-                <p class="detail-subtitle">版本: ${app.version || '1.0.0'} | 作者: ${app.author || '匿名用户'}</p>
-            </div>
-            
-            <div class="detail-description">
-                ${app.description || '暂无描述'}
-            </div>
-            
-            <div class="detail-panel" id="detail-data-panel">
-                <div class="detail-item">
-                    <span class="detail-label">付费类型</span>
-                    <span class="detail-value">
-                        ${app.premium ? `<span class="premium-badge">付费表盘</span>` : '免费表盘'}
-                        ${app.price ? `<span class="premium-price">${app.price}</span>` : ''}
-                    </span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">包名</span>
-                    <span class="detail-value">${app.package || '未提供'}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">适配机型</span>
-                    <span class="detail-value">${app.device || '通用机型'}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">表盘分区</span>
-                    <span class="detail-value">${app.category || '未分类'}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">更新时间</span>
-                    <span class="detail-value">${formattedDate}</span>
-                </div>
-                ${app.features && app.features.length > 0 ? `
-                <div class="detail-item">
-                    <span class="detail-label">功能特色</span>
-                    <span class="detail-value">${app.features.join('、')}</span>
-                </div>
-                ` : ''}
-            </div>
-            
-            <div class="btn-group">
-                ${actionButton}
-                <button class="btn btn-outline" onclick="toggleDetailPanel()" style="flex: 1;">
-                    <span id="detail-toggle-text">显示详情</span>
-                </button>
-            </div>
-            
-            <p style="text-align: center; margin-top: 15px; color: #86868b; font-size: 14px;">
-                更多表盘资源请访问社区页面
-            </p>
-        `;
-        
-        modal.classList.add('active');
-        document.querySelector('.modal-close').onclick = closeModal;
-    }
-    
-    // 处理购买按钮点击
-    function handlePurchase(appId, appName) {
-        showToast(`正在处理购买 ${appName}，请稍候...`, 'info');
-        
-        // 模拟购买流程
-        setTimeout(() => {
-            // 这里可以替换为实际的购买逻辑
-            // 例如跳转到支付页面或显示支付二维码
-            const confirmPurchase = confirm(`您确定要购买 "${appName}" 吗？\n\n价格：6元\n\n购买后请加QQ群联系管理员获取表盘文件。`);
-            
-            if (confirmPurchase) {
-                showToast(`已提交购买 ${appName} 的请求，请加QQ群联系管理员`, 'success');
-                
-                // 这里可以添加实际的支付处理逻辑
-                // 例如：window.open('https://your-payment-url.com?app=' + appId);
-                
-                // 关闭弹窗
-                closeModal();
-            }
-        }, 500);
-    }
-    
-    // 切换详情面板显示/隐藏
-    function toggleDetailPanel() {
-        const panel = document.getElementById('detail-data-panel');
-        const toggleText = document.getElementById('detail-toggle-text');
-        
-        if (panel.classList.contains('active')) {
-            panel.classList.remove('active');
-            toggleText.textContent = '显示详情';
-        } else {
-            panel.classList.add('active');
-            toggleText.textContent = '隐藏详情';
-        }
-    }
-    
-    // 显示社区页面
-    function showCommunityPage() {
-        closeModal();
-        showPage('community-page');
-    }
-    
-    // 页面切换
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        
-        const page = document.getElementById(pageId);
-        if (page) page.classList.add('active');
-        
-        document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.dataset.page === pageId) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
-        });
-        
-        if (pageId === 'home-page') {
-            setupSearchAndPagination();
-        }
-    }
-
-    // 底部导航栏点击事件
-    function handleNavigation(e) {
-        e.preventDefault();
-        const pageId = this.dataset.page;
-        showPage(pageId);
-    }
-
-    // 关闭弹窗函数
-    function closeModal() {
-        const modal = document.getElementById('detail-modal');
-        modal.classList.remove('active');
-        
-        setTimeout(() => {
-            document.getElementById('modal-body').innerHTML = '';
-        }, 300);
-    }
-
-    // 显示提示消息
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = message;
-        document.getElementById('toast-container').appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    // 渲染应用列表
-    function renderApps() {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const pageApps = filteredApps.slice(startIndex, endIndex);
-        
-        const gridContainer = document.getElementById('app-grid-view');
-        const listContainer = document.getElementById('app-list-view');
-        
-        // 清空容器
-        gridContainer.innerHTML = '';
-        listContainer.innerHTML = '';
-        
-        if (pageApps.length === 0) {
+        // 更新搜索统计
+        function updateSearchStats() {
+            const searchStats = document.getElementById('search-stats');
             const searchInput = document.getElementById('search-input');
             const searchTerm = searchInput ? searchInput.value.trim() : '';
             
-            let message = '暂无表盘数据';
-            if (searchTerm || currentCategory !== 'all') {
-                message = '没有找到符合条件的表盘，请尝试调整筛选条件';
+            let statsText = `找到 ${filteredApps.length} 个表盘`;
+            
+            if (currentCategory !== 'all') {
+                statsText += `，分区：${currentCategory}`;
             }
             
-            gridContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
-            listContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
-            updatePagination();
-            return;
-        }
-        
-        // 根据当前视图渲染
-        pageApps.forEach(app => {
-            if (currentView === 'grid') {
-                renderAppCard(app, gridContainer);
-            } else {
-                renderAppListItem(app, listContainer);
+            if (currentType !== 'all') {
+                statsText += `，类型：${currentType}`;
             }
-        });
-        
-        updatePagination();
-    }
+            
+            if (searchTerm) {
+                statsText += `，搜索"${searchTerm}"`;
+            }
+            
+            searchStats.textContent = statsText;
+            
+            if (filteredApps.length === 0) {
+                searchStats.textContent = '没有找到符合条件的表盘，请尝试调整筛选条件';
+            }
+        }
 
-    // 更新分页控件
-    function updatePagination() {
-        const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
-        const pageNumbers = document.getElementById('page-numbers');
-        const prevBtn = document.getElementById('prev-page');
-        const nextBtn = document.getElementById('next-page');
-        const pagination = document.getElementById('pagination');
-        
-        if (!pagination) return;
-        
-        if (totalPages <= 1) {
-            pagination.style.display = 'none';
-            return;
-        }
-        
-        pagination.style.display = 'flex';
-        
-        if (prevBtn) prevBtn.disabled = currentPage === 1;
-        if (nextBtn) nextBtn.disabled = currentPage === totalPages;
-        
-        if (pageNumbers) {
-            pageNumbers.innerHTML = '';
-            
-            let startPage = Math.max(1, currentPage - 3);
-            let endPage = Math.min(totalPages, startPage + 6);
-            
-            if (endPage - startPage < 6) {
-                startPage = Math.max(1, endPage - 6);
-            }
-            
-            if (startPage > 1) {
-                const firstPageBtn = document.createElement('div');
-                firstPageBtn.className = 'page-number';
-                firstPageBtn.textContent = '1';
-                firstPageBtn.addEventListener('click', () => {
-                    currentPage = 1;
-                    renderApps();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 设置搜索和分页功能
+        function setupSearchAndPagination() {
+            // 搜索功能
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.trim();
+                    
+                    if (searchTimeout) {
+                        clearTimeout(searchTimeout);
+                    }
+                    
+                    searchTimeout = setTimeout(() => {
+                        applyFiltersAndSort();
+                        currentPage = 1;
+                        renderApps();
+                        updateSearchStats();
+                    }, 300);
                 });
-                pageNumbers.appendChild(firstPageBtn);
-                
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('div');
-                    ellipsis.className = 'page-number';
-                    ellipsis.textContent = '...';
-                    ellipsis.style.cursor = 'default';
-                    pageNumbers.appendChild(ellipsis);
-                }
             }
             
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('div');
-                pageBtn.className = `page-number ${i === currentPage ? 'active' : ''}`;
-                pageBtn.textContent = i;
-                pageBtn.addEventListener('click', () => {
-                    currentPage = i;
-                    renderApps();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
-                pageNumbers.appendChild(pageBtn);
-            }
-            
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('div');
-                    ellipsis.className = 'page-number';
-                    ellipsis.textContent = '...';
-                    ellipsis.style.cursor = 'default';
-                    pageNumbers.appendChild(ellipsis);
-                }
-                
-                const lastPageBtn = document.createElement('div');
-                lastPageBtn.className = 'page-number';
-                lastPageBtn.textContent = totalPages;
-                lastPageBtn.addEventListener('click', () => {
-                    currentPage = totalPages;
-                    renderApps();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
-                pageNumbers.appendChild(lastPageBtn);
-            }
-        }
-    }
-
-    // 事件监听器初始化
-    function initializeEventListeners() {
-        // 导航栏
-        document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.dataset.page) {
-                link.addEventListener('click', handleNavigation);
-            }
-        });
-        
-        // 弹窗关闭
-        document.getElementById('detail-modal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('detail-modal')) closeModal();
-        });
-        
-        // 回车键触发搜索
-        document.getElementById('search-input')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
+            // 筛选器变化
+            document.getElementById('category-filter')?.addEventListener('change', (e) => {
+                currentCategory = e.target.value;
                 applyFiltersAndSort();
                 currentPage = 1;
                 renderApps();
                 updateSearchStats();
+            });
+            
+            // 类型筛选器变化
+            document.getElementById('type-filter')?.addEventListener('change', (e) => {
+                currentType = e.target.value;
+                applyFiltersAndSort();
+                currentPage = 1;
+                renderApps();
+                updateSearchStats();
+            });
+            
+            document.getElementById('sort-by')?.addEventListener('change', (e) => {
+                sortBy = e.target.value;
+                applyFiltersAndSort();
+                currentPage = 1;
+                renderApps();
+            });
+            
+            document.getElementById('sort-order')?.addEventListener('change', (e) => {
+                sortOrder = e.target.value;
+                applyFiltersAndSort();
+                currentPage = 1;
+                renderApps();
+            });
+            
+            // 视图切换 - 改为下拉菜单切换
+            document.getElementById('view-select')?.addEventListener('change', function() {
+                currentView = this.value;
+                
+                // 显示当前视图
+                switchView(currentView);
+                
+                // 显示切换提示
+                showToast(`已切换到${currentView === 'grid' ? '方格' : '列表'}视图`, 'info');
+            });
+            
+            // 重置筛选按钮
+            document.getElementById('reset-filters')?.addEventListener('click', () => {
+                document.getElementById('category-filter').value = 'all';
+                document.getElementById('sort-by').value = 'created_at';
+                document.getElementById('sort-order').value = 'desc';
+                document.getElementById('search-input').value = '';
+                document.getElementById('view-select').value = 'grid';
+                document.getElementById('type-filter').value = 'all';
+                
+                currentCategory = 'all';
+                currentType = 'all';
+                sortBy = 'created_at';
+                sortOrder = 'desc';
+                currentView = 'grid';
+                
+                applyFiltersAndSort();
+                currentPage = 1;
+                renderApps();
+                updateSearchStats();
+                switchView('grid');
+                showToast('筛选条件已重置', 'success');
+            });
+            
+            // 分页按钮
+            document.getElementById('prev-page')?.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            document.getElementById('next-page')?.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            // 初始应用筛选和排序
+            applyFiltersAndSort();
+            renderApps();
+        }
+
+        // 应用筛选和排序
+        function applyFiltersAndSort() {
+            // 先根据搜索词筛选
+            const searchInput = document.getElementById('search-input');
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            
+            filteredApps = appsData.filter(app => {
+                // 搜索过滤
+                if (searchTerm) {
+                    const searchFields = [
+                        app.name,
+                        app.author,
+                        app.description,
+                        app.category,
+                        app.type
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    
+                    if (!searchFields.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+                
+                // 分类过滤
+                if (currentCategory !== 'all' && app.category !== currentCategory) {
+                    return false;
+                }
+                
+                // 类型过滤
+                if (currentType !== 'all' && app.type !== currentType) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // 排序
+            sortApps();
+        }
+
+        // 排序应用
+        function sortApps() {
+            filteredApps.sort((a, b) => {
+                let aValue, bValue;
+                
+                switch (sortBy) {
+                    case 'name':
+                        aValue = a.name || '';
+                        bValue = b.name || '';
+                        break;
+                    case 'author':
+                        aValue = a.author || '';
+                        bValue = b.author || '';
+                        break;
+                    case 'created_at':
+                    default:
+                        aValue = new Date(a.created_at || 0).getTime();
+                        bValue = new Date(b.created_at || 0).getTime();
+                        break;
+                }
+                
+                if (sortOrder === 'asc') {
+                    return aValue > bValue ? 1 : -1;
+                } else {
+                    return aValue < bValue ? 1 : -1;
+                }
+            });
+        }
+
+        // 切换视图
+        function switchView(view) {
+            currentView = view;
+            
+            // 显示/隐藏对应的视图容器
+            const gridView = document.getElementById('app-grid-view');
+            const listView = document.getElementById('app-list-view');
+            
+            if (view === 'grid') {
+                gridView.style.display = 'grid';
+                listView.style.display = 'none';
+            } else {
+                gridView.style.display = 'none';
+                listView.style.display = 'flex';
             }
-        });
-    }
+            
+            // 重新渲染应用
+            renderApps();
+        }
+
+        // 渲染应用卡片
+        function renderAppCard(app, container = null) {
+            if (!container) container = document.getElementById('app-grid-view');
+            
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.dataset.id = app.id;
+            
+            const realSrc = app.icon || CONFIG.defaultIcon;
+            
+            // 添加类型徽章
+            const typeBadge = app.type ? `<span class="type-badge type-${app.type.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '')}">${app.type}</span>` : '';
+            
+            card.innerHTML = `
+                <img class="app-icon" src="${realSrc}" 
+                     alt="${app.name}" 
+                     onerror="this.src='${CONFIG.defaultIcon}'">
+                <h3 class="app-name">${app.name} ${typeBadge}</h3>
+                <div class="app-meta">
+                    <p>${app.author || '匿名用户'}</p>
+                    ${app.category ? `<p>${app.category}</p>` : ''}
+                </div>
+            `;
+            
+            card.addEventListener('click', () => showAppDetail(app));
+            container.appendChild(card);
+        }
+        
+        // 渲染列表项
+        function renderAppListItem(app, container) {
+            const item = document.createElement('div');
+            item.className = 'app-list-item';
+            item.dataset.id = app.id;
+            
+            const realSrc = app.icon || CONFIG.defaultIcon;
+            
+            // 添加类型徽章
+            const typeBadge = app.type ? `<span class="type-badge type-${app.type.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '')}" style="margin-left: 8px;">${app.type}</span>` : '';
+            
+            item.innerHTML = `
+                <img class="app-icon" src="${realSrc}" 
+                     alt="${app.name}" 
+                     onerror="this.src='${CONFIG.defaultIcon}'">
+                <div class="app-info">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                        <h3 class="app-name">${app.name}</h3>
+                        <span style="background: #f5f0ff; color: #5856d6; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                            ${app.category || '未分类'}
+                        </span>
+                        ${typeBadge}
+                    </div>
+                    <div class="app-meta">
+                        <span>作者: ${app.author || '匿名用户'}</span>
+                        <span>版本: ${app.version || '1.0.0'}</span>
+                        ${app.device ? `<span style="color: #34c759;">📱 ${app.device}</span>` : ''}
+                    </div>
+                    <p style="color: #515154; font-size: 14px; margin-top: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${app.description || '暂无描述'}
+                    </p>
+                </div>
+            `;
+            
+            item.addEventListener('click', () => showAppDetail(app));
+            container.appendChild(item);
+        }
+
+        // 显示应用详情
+        async function showAppDetail(app) {
+            const modal = document.getElementById('detail-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            // 格式化日期
+            const formattedDate = app.created_at ? 
+                new Date(app.created_at).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : '未知';
+            
+            // 根据是否付费显示不同的按钮
+            let actionButton = '';
+            if (app.premium) {
+                // 付费表盘：显示购买按钮
+                actionButton = `
+                    <button class="btn btn-premium" onclick="handlePurchase('${app.id}', '${app.name}')" style="flex: 1;">
+                        <span>购买表盘</span>
+                        <span class="premium-price">${app.price || '6元'}</span>
+                    </button>
+                `;
+            } else if (app.link) {
+                // 免费表盘且有链接：显示下载按钮
+                actionButton = `
+                    <a href="${app.link}" class="btn btn-primary" target="_blank" style="flex: 1;">
+                        下载表盘
+                    </a>
+                `;
+            }
+            
+            modalBody.innerHTML = `
+                <div class="detail-header">
+                    <img src="${app.icon || CONFIG.defaultIcon}" 
+                         alt="${app.name}" class="detail-icon">
+                    <h2 class="detail-title">${app.name}</h2>
+                    <p class="detail-subtitle">版本: ${app.version || '1.0.0'} | 作者: ${app.author || '匿名用户'}</p>
+                </div>
+                
+                <div class="detail-description">
+                    ${app.description || '暂无描述'}
+                </div>
+                
+                <div class="detail-panel" id="detail-data-panel">
+                    <div class="detail-item">
+                        <span class="detail-label">付费类型</span>
+                        <span class="detail-value">
+                            ${app.premium ? `<span class="premium-badge">付费表盘</span>` : '免费表盘'}
+                            ${app.price ? `<span class="premium-price">${app.price}</span>` : ''}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">类型</span>
+                        <span class="detail-value">
+                            <span class="type-badge type-${app.type ? app.type.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '') : '原创'}">
+                                ${app.type || '原创'}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">包名</span>
+                        <span class="detail-value">${app.package || '未提供'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">适配机型</span>
+                        <span class="detail-value">${app.device || '通用机型'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">表盘分区</span>
+                        <span class="detail-value">${app.category || '未分类'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">更新时间</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                    ${app.features && app.features.length > 0 ? `
+                    <div class="detail-item">
+                        <span class="detail-label">功能特色</span>
+                        <span class="detail-value">${app.features.join('、')}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="btn-group">
+                    ${actionButton}
+                    <button class="btn btn-outline" onclick="toggleDetailPanel()" style="flex: 1;">
+                        <span id="detail-toggle-text">显示详情</span>
+                    </button>
+                </div>
+                
+                <p style="text-align: center; margin-top: 15px; color: #86868b; font-size: 14px;">
+                    更多表盘资源请访问社区页面
+                </p>
+            `;
+            
+            modal.classList.add('active');
+            document.querySelector('.modal-close').onclick = closeModal;
+        }
+        
+        // 处理购买按钮点击
+        function handlePurchase(appId, appName) {
+            showToast(`正在处理购买 ${appName}，请稍候...`, 'info');
+            
+            // 模拟购买流程
+            setTimeout(() => {
+                // 这里可以替换为实际的购买逻辑
+                // 例如跳转到支付页面或显示支付二维码
+                const confirmPurchase = confirm(`您确定要购买 "${appName}" 吗？\n\n价格：6元\n\n购买后请加QQ群联系管理员获取表盘文件。`);
+                
+                if (confirmPurchase) {
+                    showToast(`已提交购买 ${appName} 的请求，请加QQ群联系管理员`, 'success');
+                    
+                    // 这里可以添加实际的支付处理逻辑
+                    // 例如：window.open('https://your-payment-url.com?app=' + appId);
+                    
+                    // 关闭弹窗
+                    closeModal();
+                }
+            }, 500);
+        }
+        
+        // 切换详情面板显示/隐藏
+        function toggleDetailPanel() {
+            const panel = document.getElementById('detail-data-panel');
+            const toggleText = document.getElementById('detail-toggle-text');
+            
+            if (panel.classList.contains('active')) {
+                panel.classList.remove('active');
+                toggleText.textContent = '显示详情';
+            } else {
+                panel.classList.add('active');
+                toggleText.textContent = '隐藏详情';
+            }
+        }
+        
+        // 显示社区页面
+        function showCommunityPage() {
+            closeModal();
+            showPage('community-page');
+        }
+        
+        // 页面切换
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            const page = document.getElementById(pageId);
+            if (page) page.classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.dataset.page === pageId) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            
+            if (pageId === 'home-page') {
+                setupSearchAndPagination();
+            }
+        }
+
+        // 底部导航栏点击事件
+        function handleNavigation(e) {
+            e.preventDefault();
+            const pageId = this.dataset.page;
+            showPage(pageId);
+        }
+
+        // 关闭弹窗函数
+        function closeModal() {
+            const modal = document.getElementById('detail-modal');
+            modal.classList.remove('active');
+            
+            setTimeout(() => {
+                document.getElementById('modal-body').innerHTML = '';
+            }, 300);
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // 渲染应用列表
+        function renderApps() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageApps = filteredApps.slice(startIndex, endIndex);
+            
+            const gridContainer = document.getElementById('app-grid-view');
+            const listContainer = document.getElementById('app-list-view');
+            
+            // 清空容器
+            gridContainer.innerHTML = '';
+            listContainer.innerHTML = '';
+            
+            if (pageApps.length === 0) {
+                const searchInput = document.getElementById('search-input');
+                const searchTerm = searchInput ? searchInput.value.trim() : '';
+                
+                let message = '暂无表盘数据';
+                if (searchTerm || currentCategory !== 'all' || currentType !== 'all') {
+                    message = '没有找到符合条件的表盘，请尝试调整筛选条件';
+                }
+                
+                gridContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
+                listContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
+                updatePagination();
+                return;
+            }
+            
+            // 根据当前视图渲染
+            pageApps.forEach(app => {
+                if (currentView === 'grid') {
+                    renderAppCard(app, gridContainer);
+                } else {
+                    renderAppListItem(app, listContainer);
+                }
+            });
+            
+            updatePagination();
+        }
+
+        // 更新分页控件
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+            const pageNumbers = document.getElementById('page-numbers');
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            const pagination = document.getElementById('pagination');
+            
+            if (!pagination) return;
+            
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+            
+            pagination.style.display = 'flex';
+            
+            if (prevBtn) prevBtn.disabled = currentPage === 1;
+            if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+            
+            if (pageNumbers) {
+                pageNumbers.innerHTML = '';
+                
+                let startPage = Math.max(1, currentPage - 3);
+                let endPage = Math.min(totalPages, startPage + 6);
+                
+                if (endPage - startPage < 6) {
+                    startPage = Math.max(1, endPage - 6);
+                }
+                
+                if (startPage > 1) {
+                    const firstPageBtn = document.createElement('div');
+                    firstPageBtn.className = 'page-number';
+                    firstPageBtn.textContent = '1';
+                    firstPageBtn.addEventListener('click', () => {
+                        currentPage = 1;
+                        renderApps();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    pageNumbers.appendChild(firstPageBtn);
+                    
+                    if (startPage > 2) {
+                        const ellipsis = document.createElement('div');
+                        ellipsis.className = 'page-number';
+                        ellipsis.textContent = '...';
+                        ellipsis.style.cursor = 'default';
+                        pageNumbers.appendChild(ellipsis);
+                    }
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('div');
+                    pageBtn.className = `page-number ${i === currentPage ? 'active' : ''}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', () => {
+                        currentPage = i;
+                        renderApps();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    pageNumbers.appendChild(pageBtn);
+                }
+                
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const ellipsis = document.createElement('div');
+                        ellipsis.className = 'page-number';
+                        ellipsis.textContent = '...';
+                        ellipsis.style.cursor = 'default';
+                        pageNumbers.appendChild(ellipsis);
+                    }
+                    
+                    const lastPageBtn = document.createElement('div');
+                    lastPageBtn.className = 'page-number';
+                    lastPageBtn.textContent = totalPages;
+                    lastPageBtn.addEventListener('click', () => {
+                        currentPage = totalPages;
+                        renderApps();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                    pageNumbers.appendChild(lastPageBtn);
+                }
+            }
+        }
+
+        // 事件监听器初始化
+        function initializeEventListeners() {
+            // 导航栏
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.dataset.page) {
+                    link.addEventListener('click', handleNavigation);
+                }
+            });
+            
+            // 弹窗关闭
+            document.getElementById('detail-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('detail-modal')) closeModal();
+            });
+            
+            // 回车键触发搜索
+            document.getElementById('search-input')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyFiltersAndSort();
+                    currentPage = 1;
+                    renderApps();
+                    updateSearchStats();
+                }
+            });
+        }
+        
+        // ========== 登录功能 ==========
+        
+        // 处理登录 - 简化版本，直接跳转到 admin.html
+        function handleLogin() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            // 清除错误消息
+            errorDiv.style.display = 'none';
+            
+            // 验证账户密码
+            if (username === '123456' && password === '123456') {
+                // 登录成功，将当前数据保存到 localStorage，供 admin.html 使用
+                const dataToSave = {
+                    meta: {
+                        version: "2.0",
+                        save_date: new Date().toISOString(),
+                        count: appsData.length,
+                        note: "从首页导出"
+                    },
+                    watchfaces: appsData
+                };
+                localStorage.setItem('watchface_data', JSON.stringify(dataToSave));
+                
+                // 设置登录状态标记
+                localStorage.setItem('watchface_admin_logged_in', 'true');
+                
+                // 跳转到管理员页面
+                window.location.href = 'admin.html';
+            } else {
+                // 登录失败
+                errorDiv.textContent = '账户或密码错误，请使用账户：123456，密码：123456';
+                errorDiv.style.display = 'block';
+                showToast('登录失败，请检查账户密码', 'error');
+            }
+        }
     </script>
 </body>
 </html>
