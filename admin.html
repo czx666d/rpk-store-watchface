@@ -501,13 +501,13 @@
             </div>
         </header>
         
-        <!-- 模式切换 -->
+        <!-- 视图切换 -->
         <div class="mode-tabs">
             <button class="mode-tab active" data-mode="visual" onclick="switchMode('visual')">
-                🎨 图形化模式
+                🎨 图形化视图
             </button>
             <button class="mode-tab" data-mode="code" onclick="switchMode('code')">
-                💻 代码模式
+                💻 代码视图
             </button>
         </div>
         
@@ -948,7 +948,7 @@
             }
         }
         
-        // 切换模式
+        // 切换视图
         function switchMode(mode) {
             currentMode = mode;
             
@@ -964,7 +964,7 @@
             });
             document.getElementById(`${mode === 'visual' ? 'visual' : 'code'}-editor`).classList.add('active');
             
-            // 如果切换到代码模式，更新编辑器内容
+            // 如果切换到代码视图，更新编辑器内容
             if (mode === 'code') {
                 updateCodeEditor();
             }
@@ -1087,7 +1087,7 @@ function processImportData(jsonData) {
     showMessage(`成功导入 ${watchfaceData.length} 个表盘数据`, 'success');
 }
         
-        // 处理代码模式的JSON导入
+        // 处理代码视图的JSON导入
         function importCodeJson(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1115,7 +1115,7 @@ function processImportData(jsonData) {
             reader.readAsText(file);
         }
         
-        // 应用代码模式的修改
+        // 应用代码视图的修改
         function applyCodeChanges() {
             try {
                 const editor = document.getElementById('json-code-editor');
@@ -1146,7 +1146,7 @@ function processImportData(jsonData) {
             }
         }
         
-        // 保存代码模式的修改
+        // 保存代码视图的修改
         function saveCodeChanges() {
             applyCodeChanges();
             saveAllChanges();
