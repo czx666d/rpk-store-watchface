@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>禾芒新屿表盘商店</title>
-    <script src="js/supabase.min.js"></script>
     <script src="js/jszip.min.js"></script>
     <style>
         /* 基本样式 */
@@ -19,7 +18,7 @@
             background-color: #f5f5f7;
             color: #1d1d1f;
             line-height: 1.5;
-            padding-bottom: 70px;
+            padding-bottom: 120px;
         }
         
         .container {
@@ -56,20 +55,23 @@
             font-size: 16px;
         }
         
-        /* 工具栏样式 */
-        .toolbar {
+        /* 筛选工具栏样式 */
+        .filter-toolbar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            align-items: center;
         }
         
         .search-container {
             position: relative;
             flex: 1;
-            max-width: 500px;
+            max-width: 400px;
         }
         
         #search-input {
@@ -97,55 +99,49 @@
             font-size: 18px;
         }
         
-        .view-toggle {
+        .filter-group {
             display: flex;
-            gap: 8px;
-            background: white;
-            border: 1px solid #d2d2d7;
-            border-radius: 12px;
-            padding: 4px;
+            flex-direction: column;
+            min-width: 120px;
         }
         
-        .view-btn {
-            background: transparent;
+        .filter-label {
+            font-size: 13px;
+            color: #86868b;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 15px;
+            background: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+        
+        /* 重置按钮 */
+        .btn-secondary {
+            background-color: #f2f2f7;
+            color: #1d1d1f;
+            padding: 10px 20px;
+            border-radius: 10px;
             border: none;
-            border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 18px;
+            font-size: 15px;
         }
         
-        .view-btn.active {
-            background-color: #007aff;
-            color: white;
-        }
-        
-        .view-btn:hover {
-            background-color: #f5f5f7;
-        }
-        
-        .view-btn.active:hover {
-            background-color: #007aff;
-        }
-        
-        /* 公告栏样式 */
-        .announcement-bar {
-            background-color: #f5f5f7;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 25px;
-            border-left: 4px solid #007aff;
-        }
-        
-        .announcement-bar p {
-            color: #515154;
-            font-size: 14px;
-            line-height: 1.4;
+        .btn-secondary:hover {
+            background-color: #e5e5ea;
         }
         
         /* 应用列表容器 */
@@ -155,39 +151,68 @@
         
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
             padding: 5px;
         }
         
+        /* 列表视图样式 */
         .app-list {
             display: none;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
         
-        /* 修复视图切换：添加明确的显示/隐藏控制 */
-        .app-grid:not(.active) {
-            display: none;
-        }
-        
-        .app-list:not(.active) {
-            display: none;
-        }
-        
-        .app-grid.active {
-            display: grid;
-        }
-        
-        .app-list.active {
+        .app-list-item {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
             display: flex;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid transparent;
         }
         
-        /* 应用卡片样式 */
+        .app-list-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-color: #007aff;
+        }
+        
+        .app-list-item .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            margin-bottom: 0;
+        }
+        
+        .app-list-item .app-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .app-list-item .app-name {
+            font-size: 16px;
+            margin-bottom: 5px;
+            height: auto;
+        }
+        
+        .app-list-item .app-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #86868b;
+        }
+        
+        /* 应用卡片样式 - 恢复简洁小巧 */
         .app-card {
             background: white;
             border-radius: 16px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             cursor: pointer;
@@ -200,94 +225,39 @@
         }
         
         .app-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             border-color: #007aff;
         }
         
         .app-icon {
-            width: 90px;
-            height: 90px;
-            border-radius: 22px;
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
             object-fit: cover;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             background-color: #f5f5f7;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
         }
         
         .app-name {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #1d1d1f;
             line-height: 1.3;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 42px;
+            height: 36px;
         }
         
         .app-meta {
             color: #86868b;
-            font-size: 13px;
+            font-size: 12px;
             margin-top: auto;
             width: 100%;
-        }
-        
-        /* 列表视图样式 */
-        .app-list-item {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            border: 1px solid transparent;
-        }
-        
-        .app-list-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border-color: #007aff;
-        }
-        
-        .app-list-item .app-icon {
-            width: 70px;
-            height: 70px;
-            margin-bottom: 0;
-        }
-        
-        .app-list-item .app-info {
-            flex: 1;
-            text-align: left;
-            min-width: 0; /* 防止内容溢出 */
-        }
-        
-        .app-list-item .app-name {
-            font-size: 18px;
-            margin-bottom: 6px;
-            height: auto;
-        }
-        
-        .app-list-item .app-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .app-list-item .app-description {
-            color: #515154;
-            font-size: 14px;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
         
         /* 分页样式 */
@@ -346,7 +316,7 @@
             color: white;
         }
         
-        /* 应用详情弹窗 */
+        /* 应用详情弹窗 - 缩小版 */
         .modal {
             display: none;
             position: fixed;
@@ -371,11 +341,9 @@
             background: white;
             border-radius: 20px;
             width: 90%;
-            max-width: 500px;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-width: 400px;
             position: relative;
-            padding: 30px;
+            padding: 25px;
             transform: translateY(20px);
             transition: transform 0.3s ease;
         }
@@ -386,8 +354,8 @@
         
         .modal-close {
             position: absolute;
-            top: 20px;
-            right: 25px;
+            top: 15px;
+            right: 20px;
             font-size: 28px;
             cursor: pointer;
             color: #86868b;
@@ -403,15 +371,81 @@
             background-color: #f5f5f7;
         }
         
-        .detail-section {
-            margin-bottom: 25px;
+        /* 详情内容样式 */
+        .detail-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .detail-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 15px;
+            background-color: #f5f5f7;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
         }
         
         .detail-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 700;
             color: #1d1d1f;
+            margin-bottom: 5px;
+        }
+        
+        .detail-subtitle {
+            color: #86868b;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .detail-description {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #515154;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        /* 详情数据面板 */
+        .detail-panel {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-panel.active {
+            display: block;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e5ea;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: #86868b;
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            color: #1d1d1f;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: right;
         }
         
         /* 按钮样式 */
@@ -437,31 +471,50 @@
             background-color: #0056cc;
         }
         
-        .btn-secondary {
-            background-color: #f2f2f7;
-            color: #1d1d1f;
+        .btn-outline {
+            background: transparent;
+            color: #007aff;
+            border: 1px solid #007aff;
         }
         
-        .btn-secondary:hover {
-            background-color: #e5e5ea;
+        .btn-outline:hover {
+            background-color: rgba(0, 122, 255, 0.1);
         }
         
-        .btn-success {
-            background-color: #34c759;
+        .btn-premium {
+            background: linear-gradient(135deg, #ff9500, #ff5e3a);
             color: white;
         }
         
-        .btn-success:hover {
-            background-color: #2aa44f;
+        .btn-premium:hover {
+            background: linear-gradient(135deg, #e88500, #ff4a26);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 94, 58, 0.3);
         }
         
-        .btn-danger {
-            background-color: #ff3b30;
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* 付费标识样式 */
+        .premium-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff9500, #ff5e3a);
             color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
         }
         
-        .btn-danger:hover {
-            background-color: #d70015;
+        .premium-price {
+            color: #ff9500;
+            font-weight: 600;
+            font-size: 16px;
         }
         
         /* 底部导航栏 */
@@ -560,354 +613,6 @@
             }
         }
         
-        /* 我的页面样式 */
-        .user-header {
-            text-align: center;
-            padding: 30px 20px 20px;
-            background: linear-gradient(135deg, #007aff, #5856d6);
-            border-radius: 20px;
-            color: white;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 122, 255, 0.2);
-        }
-        
-        .user-avatar {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            margin: 0 auto 15px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .user-header h3 {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .auth-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .auth-buttons .btn {
-            min-width: 120px;
-        }
-        
-        /* 用户功能列表 */
-        .feature-list {
-            list-style: none;
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid #f2f2f7;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .feature-item:last-child {
-            border-bottom: none;
-        }
-        
-        .feature-item:hover {
-            background-color: #f9f9fb;
-        }
-        
-        .feature-icon {
-            font-size: 24px;
-            margin-right: 15px;
-            width: 40px;
-            text-align: center;
-        }
-        
-        .feature-item span:last-child {
-            font-size: 17px;
-            font-weight: 500;
-            color: #1d1d1f;
-        }
-        
-        /* 上传页面样式 */
-        .upload-form {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-        
-        .upload-form h2 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 30px;
-            color: #1d1d1f;
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #1d1d1f;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #d2d2d7;
-            border-radius: 12px;
-            font-size: 16px;
-            background-color: white;
-            transition: all 0.2s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #007aff;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-        }
-        
-        .form-group textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .help-text {
-            font-size: 13px;
-            color: #86868b;
-            margin-top: 6px;
-        }
-        
-        .upload-preview {
-            text-align: center;
-            padding: 20px;
-            border: 2px dashed #d2d2d7;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            background-color: #f9f9fb;
-        }
-        
-        .upload-preview img {
-            max-width: 120px;
-            max-height: 120px;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .upload-preview p {
-            color: #86868b;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        
-        /* 认证对话框样式 */
-        .dialog-backdrop {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-        }
-        
-        .auth-dialog {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            width: 90%;
-            max-width: 400px;
-            z-index: 10000;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        }
-        
-        .auth-dialog h3 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 25px;
-            text-align: center;
-            color: #1d1d1f;
-        }
-        
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .auth-form input {
-            padding: 14px 16px;
-            border: 1px solid #d2d2d7;
-            border-radius: 12px;
-            font-size: 16px;
-            background-color: white;
-            transition: all 0.2s ease;
-        }
-        
-        .auth-form input:focus {
-            outline: none;
-            border-color: #007aff;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-        }
-        
-        .auth-form .btn {
-            margin-top: 10px;
-        }
-        
-        .forgot-password {
-            text-align: right;
-            margin-top: -10px;
-        }
-        
-        .forgot-password a {
-            color: #007aff;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
-        
-        .password-hint {
-            font-size: 12px;
-            color: #86868b;
-            margin-top: -10px;
-            margin-bottom: 10px;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .app-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 15px;
-            }
-            
-            .app-card {
-                padding: 18px;
-            }
-            
-            .app-icon {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .app-name {
-                font-size: 15px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .container {
-                padding: 10px;
-            }
-            
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-            }
-            
-            .app-list-item {
-                padding: 18px;
-                gap: 15px;
-            }
-            
-            .app-list-item .app-icon {
-                width: 60px;
-                height: 60px;
-            }
-            
-            .app-list-item .app-meta {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .auth-dialog {
-                padding: 30px 20px;
-                width: 95%;
-            }
-            
-            .upload-form {
-                padding: 20px;
-            }
-            
-            .user-header {
-                padding: 25px 15px 15px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .app-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .search-container {
-                max-width: 100%;
-            }
-            
-            .view-toggle {
-                align-self: flex-end;
-            }
-            
-            .app-list-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 12px;
-            }
-            
-            .app-list-item .app-info {
-                text-align: center;
-            }
-            
-            .app-list-item .app-meta {
-                justify-content: center;
-            }
-            
-            .auth-buttons {
-                flex-direction: column;
-            }
-            
-            .auth-buttons .btn {
-                width: 100%;
-            }
-        }
-        
         /* 空状态样式 */
         .empty-state {
             grid-column: 1 / -1;
@@ -937,28 +642,82 @@
             margin-top: 8px;
         }
         
-        /* 文件上传按钮 */
-        .file-upload-btn {
-            display: inline-block;
-            background-color: #f2f2f7;
-            border: 2px dashed #d2d2d7;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
-            margin-bottom: 10px;
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .filter-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                max-width: 100%;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 12px;
+            }
+            
+            .app-card {
+                padding: 12px;
+            }
+            
+            .app-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .app-name {
+                font-size: 13px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .app-list-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .app-list-item .app-meta {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
         }
         
-        .file-upload-btn:hover {
-            background-color: #e5e5ea;
-            border-color: #007aff;
-        }
-        
-        .file-upload-btn span {
-            color: #007aff;
-            font-weight: 500;
+        @media (max-width: 480px) {
+            .app-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .app-card {
+                padding: 10px;
+            }
+            
+            .app-icon {
+                width: 50px;
+                height: 50px;
+            }
         }
     </style>
 </head>
@@ -971,20 +730,49 @@
                 <p>发现精彩表盘，个性化你的设备</p>
             </header>
 
-            <!-- 搜索和视图切换工具栏 -->
-            <div class="toolbar">
+            <!-- 筛选工具栏（包含搜索和视图切换） -->
+            <div class="filter-toolbar">
                 <div class="search-container">
-                    <input type="text" id="search-input" placeholder="搜索表盘名称、作者或描述...">
+                    <input type="text" id="search-input" placeholder="搜索表盘...">
                     <span class="search-icon">🔍</span>
                 </div>
-                <div class="view-toggle">
-                    <button class="view-btn active" data-view="grid" title="方格视图">
-                        <span>🗏</span>
-                    </button>
-                    <button class="view-btn" data-view="list" title="列表视图">
-                        <span>📑</span>
-                    </button>
+                
+                <div class="filter-group">
+                    <div class="filter-label">分区分类</div>
+                    <select class="filter-select" id="category-filter">
+                        <option value="all">全部分区</option>
+                    </select>
                 </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">排序方式</div>
+                    <select class="filter-select" id="sort-by">
+                        <option value="created_at">上传时间</option>
+                        <option value="name">名称</option>
+                        <option value="author">作者</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">排序方向</div>
+                    <select class="filter-select" id="sort-order">
+                        <option value="desc">降序</option>
+                        <option value="asc">升序</option>
+                    </select>
+                </div>
+                
+                <!-- 修改为下拉菜单的视图切换 -->
+                <div class="filter-group">
+                    <div class="filter-label">视图切换</div>
+                    <select class="filter-select" id="view-select">
+                        <option value="grid">方格视图</option>
+                        <option value="list">列表视图</option>
+                    </select>
+                </div>
+                
+                <button class="btn-secondary" id="reset-filters">
+                    重置
+                </button>
             </div>
 
             <!-- 搜索结果统计 -->
@@ -994,7 +782,7 @@
 
             <!-- 应用列表容器 -->
             <div class="apps-container">
-                <div class="app-grid active" id="app-grid-view">
+                <div class="app-grid" id="app-grid-view">
                     <!-- 方格视图内容 -->
                 </div>
                 <div class="app-list" id="app-list-view">
@@ -1010,96 +798,37 @@
             </div>
         </div>
         
-        <!-- 我的页面 -->
-        <div class="page" id="profile-page">
-            <div class="user-header">
-                <div class="user-avatar">👤</div>
-                <h3 id="user-name">我的空间</h3>
-                <div id="auth-buttons" class="auth-buttons">
-                    <button class="btn btn-primary" id="signup-btn">注册</button>
-                    <button class="btn btn-secondary" id="login-btn">登录</button>
-                    <button class="btn btn-danger" id="logout-btn" style="display:none;">退出登录</button>
+        <!-- 社区页面 -->
+        <div class="page" id="community-page">
+            <div style="text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #007aff, #5856d6); border-radius: 20px; color: white; margin-bottom: 30px;">
+                <div style="width: 80px; height: 80px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px;">
+                    👥
                 </div>
+                <h3 style="font-size: 24px; margin-bottom: 10px;">禾芒新屿工作室</h3>
+                <p style="opacity: 0.9;">加入我们，获取最新表盘资源和技术支持</p>
             </div>
             
-            <div id="user-features">
-                <ul class="feature-list">
-                    <li class="feature-item" id="upload-feature">
-                        <span class="feature-icon">📤</span>
-                        <span>上传表盘文件</span>
-                    </li>
-                    <li class="feature-item" id="my-apps-feature">
-                        <span class="feature-icon">📱</span>
-                        <span>我的表盘</span>
-                    </li>
-                </ul>
-                
-                <!-- 联系按钮 -->
-                <ul class="feature-list" style="margin-top: 30px; padding-bottom: 100px;">
-                    <li class="feature-item" style="justify-content: center; cursor: pointer;">
-                        <a href="https://qm.qq.com/q/MkzRaG2YoM" class="btn btn-primary" target="_blank" style="margin: 0; width: auto; display: inline-flex; align-items: center; justify-content: center;">
-                            <span style="margin-right: 8px;">👨‍💻</span>点击链接加入群聊【【Blue OS】发烧友聚集地】
-                        </a>
-                    </li>
-                </ul>
+            <div style="margin-bottom: 30px;">
+                <h3 style="font-size: 18px; margin-bottom: 15px; color: #1d1d1f;">📢 公告</h3>
+                <p style="color: #515154; line-height: 1.5;">欢迎加入表盘创作者社区！在这里你可以获取最新表盘资源、交流使用心得、获取技术支持。</p>
             </div>
-        </div>
-        
-        <!-- 上传页面 -->
-        <div class="page" id="upload-page">
-            <div class="upload-form">
-                <h2>上传表盘文件</h2>
-                <div class="form-group">
-                    <label for="app-file">选择.rpk文件（选择后自动填充以下信息）</label>
-                    <div class="file-upload-btn" onclick="document.getElementById('app-file').click()">
-                        <span>点击选择.rpk文件</span>
-                    </div>
-                    <input type="file" id="app-file" accept=".rpk" multiple="false" style="display: none;">
-                </div>
-                <div class="form-group">
-                    <label for="app-name">表盘名称</label>
-                    <input type="text" id="app-name" placeholder="请输入表盘名称">
-                </div>
-                <div class="form-group">
-                    <label for="app-package">包名 (如: com.example.watchface)</label>
-                    <input type="text" id="app-package" placeholder="请输入包名">
-                </div>
-                <div class="form-group">
-                    <label for="app-version">版本号 (如: 1.0.0)</label>
-                    <input type="text" id="app-version" placeholder="请输入版本号">
-                </div>
-                <div class="form-group">
-                    <label for="app-description">表盘描述</label>
-                    <textarea id="app-description" placeholder="请输入表盘描述"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="app-author">表盘作者</label>
-                    <input type="text" id="app-author" placeholder="请输入表盘作者名称">
-                </div>
-                <div class="form-group">
-                    <label for="app-icon">自定义图标 (可选)</label>
-                    <div class="file-upload-btn" onclick="document.getElementById('app-icon').click()">
-                        <span>点击选择图标文件 (PNG/JPG)</span>
-                    </div>
-                    <input type="file" id="app-icon" accept=".png,.jpg,.jpeg" multiple="false" style="display: none;">
-                    <p class="help-text">上传PNG或JPG格式的图片作为表盘图标，若不选择将使用包内图标</p>
-                </div>
-                <div class="upload-preview" id="upload-preview">
-                    <p>表盘预览将在这里显示</p>
-                </div>
-                <button class="btn btn-primary" id="submit-upload" style="width: 100%; padding: 16px; font-size: 17px;">提交上传</button>
-            </div>
-        </div>
-        
-        <!-- 我的表盘页面 -->
-        <div class="page" id="my-apps-page">
-            <header class="header">
-                <h1>我的表盘</h1>
-                <p>查看和管理您上传的表盘</p>
-            </header>
             
-            <div class="app-grid" id="my-apps-list">
-                <!-- 我的表盘列表 -->
+            <div style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="font-size: 18px; margin-bottom: 15px; color: #1d1d1f;">👨‍💻 QQ交流群</h3>
+                <p style="color: #515154; margin-bottom: 15px;">加入【Blue OS】发烧友聚集地，获取最新资源和实时支持</p>
+                <button class="btn btn-primary" onclick="window.open('https://qm.qq.com/q/MkzRaG2YoM', '_blank')" style="width: 100%;">
+                    加入QQ群
+                </button>
+            </div>
+            
+            <div style="background: white; border-radius: 20px; padding: 20px;">
+                <h3 style="font-size: 18px; margin-bottom: 15px; color: #1d1d1f;">🤝 如何贡献</h3>
+                <p style="color: #515154; line-height: 1.5;">欢迎所有表盘创作者提交作品！您可以通过以下方式贡献：</p>
+                <ul style="color: #515154; padding-left: 20px; margin: 15px 0; line-height: 1.6;">
+                    <li>加入QQ群联系管理员提交作品</li>
+                    <li>通过邮件发送表盘文件和相关信息</li>
+                </ul>
+                <p style="color: #515154; line-height: 1.5;">所有提交的表盘都会经过审核，审核通过后会在商店中展示。</p>
             </div>
         </div>
     </div>
@@ -1114,15 +843,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="https://qm.qq.com/q/MkzRaG2YoM" class="nav-link" target="_blank">
-                    <span class="nav-icon">👨‍💻</span>
-                    <span>加入群聊</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#profile" class="nav-link" data-page="profile-page">
-                    <span class="nav-icon">👤</span>
-                    <span>我的</span>
+                <a href="#community" class="nav-link" data-page="community-page">
+                    <span class="nav-icon">👥</span>
+                    <span>社区</span>
                 </a>
             </li>
         </ul>
@@ -1143,46 +866,42 @@
     <!-- 全局提示容器 -->
     <div id="toast-container"></div>
 
-    <!-- 认证对话框背景 -->
-    <div class="dialog-backdrop" id="auth-backdrop"></div>
-
-    <!-- 登录对话框 -->
-    <div class="auth-dialog" id="login-dialog">
-        <h3>登录</h3>
-        <form class="auth-form" id="login-form">
-            <input type="email" id="login-email" placeholder="邮箱" required>
-            <input type="password" id="login-password" placeholder="密码" required>
-            <div class="forgot-password">
-                <a href="#" id="forgot-password-link">忘记密码?</a>
-            </div>
-            <button type="submit" class="btn btn-primary">登录</button>
-        </form>
-    </div>
-
-    <!-- 注册对话框 -->
-    <div class="auth-dialog" id="signup-dialog">
-        <h3>注册</h3>
-        <form class="auth-form" id="signup-form">
-            <input type="email" id="signup-email" placeholder="邮箱" required>
-            <input type="password" id="signup-password" placeholder="密码" required>
-            <div class="password-hint">
-                密码必须包含大小写字母和数字，至少8个字符
-            </div>
-            <input type="password" id="signup-password-confirm" placeholder="确认密码" required>
-            <button type="submit" class="btn btn-primary">注册</button>
-        </form>
-    </div>
-
-    <!-- 重置密码对话框 -->
-    <div class="auth-dialog" id="reset-password-dialog">
-        <h3>重置密码</h3>
-        <form class="auth-form" id="reset-password-form">
-            <input type="email" id="reset-email" placeholder="请输入您的邮箱" required>
-            <button type="submit" class="btn btn-primary">发送重置链接</button>
-        </form>
-    </div>
-
     <script>
+        // 在 <script> 标签的开头添加
+const CLOUD_FUNCTION_API = 'https://你的云函数地址';
+
+// 然后修改 handlePurchase 函数
+async function handlePurchase(appId, appName) {
+  try {
+    showToast('正在创建订单...', 'info');
+    
+    const response = await fetch(`${CLOUD_FUNCTION_API}/create-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        appId: appId,
+        appName: appName,
+        userId: 'user_' + Date.now(),
+        timestamp: new Date().toISOString()
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showPaymentModal(result.orderInfo, result.orderId);
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (error) {
+    showToast('创建订单失败: ' + error.message, 'error');
+  }
+}
+
+// 添加支付弹窗函数
+function showPaymentModal(orderInfo, orderId) {
+  // 这里写支付界面的HTML代码
+}
     // 设置当前日期
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('zh-CN', {
         year: 'numeric',
@@ -1190,203 +909,755 @@
         day: 'numeric'
     });
     
-    // Supabase 配置
-    const SUPABASE = {
-        URL: 'https://ogpznrnpldszxxwizfbp.supabase.co',
-        KEY: 'sb_publishable_BG-NEUkCoOI08WOITCA9ZQ_W53WeSx3',
-        STORAGE_BUCKET: 'applications'
-    };
-
-    // 初始化 Supabase 客户端
-    const { createClient } = window.supabase;
-    const supabaseClient = createClient(SUPABASE.URL, SUPABASE.KEY);
-
     // 状态管理
     let appsData = [];
-    let myApps = [];
-    let currentUser = null;
     
-    // 分页和搜索状态
+    // 筛选和排序状态
     let currentView = 'grid'; // 'grid' 或 'list'
     let currentPage = 1;
     let itemsPerPage = 24;
     let filteredApps = [];
     let searchTimeout = null;
+    
+    // 筛选状态
+    let currentCategory = 'all';
+    let sortBy = 'created_at';
+    let sortOrder = 'desc';
 
     // 配置
     const CONFIG = {
         defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='
     };
 
+    // 示例表盘数据 - 添加付费字段
+    const exampleApps = [
+        {
+            "id": "01",
+            "name": "全境封锁",
+            "package": "com.vivo.wf.watch103820",
+            "version": "1.0.0",
+            "description": "移植全境封锁表盘，适配圆表，有动态背景和静态背景两种版本，赞助后进群获取全部表盘",
+            "author": "新生",
+            "icon": "icons/qjfs.png",
+            "link": "https://raw.githubusercontent.com/czx666d/rpk-store-watchface/main/watchfacerpk/com.byte.just_1745097061384.rpk",
+            "created_at": "2026-02-04 16:41:48",
+            "isLocal": false,
+            "category": "原表风格",
+            "device": "vivo/iQOO watch GT1/2",
+            "features": ["动态背景", "静态背景", "时间显示", "日期显示"],
+            "premium": true, // 付费表盘
+            "price": "6元" // 价格
+        },
+        {
+            "id": "02",
+            "name": "极光v1",
+            "package": "com.vivo.wf.watch103846",
+            "version": "1.0.0",
+            "description": "适配方表圆表，由禾芒新屿工作室-V3制作，赞助表盘群即可获得。",
+            "author": "Viper3",
+            "icon": "icons/jg1.png",
+            "link": "https://raw.githubusercontent.com/czx666d/rpk-store-watchface/main/watchfacerpk/com.byte.just_1245097061384.rpk",
+            "created_at": "2026-02-03 03:04:52",
+            "isLocal": false,
+            "category": "简约风格",
+            "device": "vivo/iQOO watch GT1/2/3",
+            "features": ["数字时间", "日期显示", "电量显示", "极光特效"],
+            "premium": false, // 免费表盘
+            "price": "免费"
+        },
+        {
+            "id": "03",
+            "name": "一日火星",
+            "package": "com.vivo.wf.watch103833",
+            "version": "1.2.0",
+            "description": "由禾芒新屿工作室-Snowyyy制作，火星主题表盘",
+            "author": "Snowyyy",
+            "icon": "icons/yrhx.png",
+            "link": "https://example.com/watchfacerpk/digital_1.2.0.rpk",
+            "created_at": "2026-01-15 10:20:30",
+            "isLocal": false,
+            "category": "科幻风格",
+            "device": "vivo/iQOO watch GT1/2",
+            "features": ["火星主题", "数字时间", "日期显示", "天气温度"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "04",
+            "name": "一日地球",
+            "package": "com.vivo.wf.watch103828",
+            "version": "1.0.0.3",
+            "description": "由禾芒新屿工作室-Snowyyy制作，赞助原创组合包即可获得。",
+            "author": "表盘设计师",
+            "icon": "icons/dq.png",
+            "link": "https://example.com/watchfacerpk/mechanical_2.0.0.rpk",
+            "created_at": "2026-02-02 22:23:44",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "vivo/iQOOwatchGT1/2",
+            "features": ["原创", "数字时显", "日期显示"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "05",
+            "name": "佩露薇利",
+            "package": "com.vivo.wf.watch103732",
+            "version": "1.0.0.8",
+            "description": "由Arleno定制公开免费，由禾芒新屿工作室-新生制作。",
+            "author": "Viper3",
+            "icon": "icons/plwl.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-02 22:06:57",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "vivo/iQOO GT1/2",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "06",
+            "name": "燎原",
+            "package": "com.vivo.wf.watch103813",
+            "version": "1.0.0.1",
+            "description": "由禾芒新屿工作室-Snowyyy制作",
+            "author": "Viper3",
+            "icon": "icons/ly.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-02 12:39:35",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "vivo/iQOO GT1/2",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "07",
+            "name": "回溯-圆表",
+            "package": "com.vivo.wf.watch103804",
+            "version": "1.0.0.3",
+            "description": "由禾芒新屿工作室制作，在适配大部分表盘给圆表，付费进群获取全部。",
+            "author": "Viper3",
+            "icon": "icons/hs.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-02 12:39:35",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "vivo/iQOOwatch3、vivo/iQOOwatch5",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "08",
+            "name": "星空-方表",
+            "package": "com.vivo.wf.watch103801",
+            "version": "1.0.0.4",
+            "description": "由禾芒新屿工作室-Snowyyy根据Apple Watch表盘渲染图制作的表盘。",
+            "author": "Viper3",
+            "icon": "icons/xk.jpg",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-02 12:39:35",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "09",
+            "name": "守岸人2.0",
+            "package": "com.vivo.wf.watch103752",
+            "version": "1.0.0.4",
+            "description": "由禾芒新屿工作室制作，付费即可进群获取，注:不是单个表盘6r，而是全部我们所制作的表盘。循环动态，熄屏显示",
+            "author": "Viper3",
+            "icon": "icons/s2.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-01 15:00:28",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "10",
+            "name": "溯",
+            "package": "com.vivo.wf.watch103753",
+            "version": "1.0.0.7",
+            "description": "由禾芒新屿工作室制作，付费即可进群获取，付费进群获取，循环动态示",
+            "author": "Viper3",
+            "icon": "icons/s.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-01 15:00:28",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "11",
+            "name": "AE86",
+            "package": "com.vivo.wf.watch103747",
+            "version": "1.0.0.7",
+            "description": "由禾芒新屿工作室制作，循环动态，熄屏显示",
+            "author": "Viper3",
+            "icon": "icons/ae86.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-02-01 12:43:56",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "12",
+            "name": "蕾塞",
+            "package": "com.vivo.wf.watch103719",
+            "version": "1.0.0.2",
+            "description": "由禾芒新屿工作室制作，循环动态",
+            "author": "Viper3",
+            "icon": "icons/fnn.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-31 22:47:22",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "13",
+            "name": "颜绯",
+            "package": "com.example.yanfei",
+            "version": "1.0.0.7",
+            "description": "动态循环，如若表盘未显示，请重启表盘",
+            "author": "新生",
+            "icon": "icons/yf.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-31 01:29:43",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "14",
+            "name": "明日香",
+            "package": "com.example.mingrixiang",
+            "version": "1.0.0",
+            "description": "循环动态，GT1 2均可使用，如若表盘不显示，请重启手表",
+            "author": "新生",
+            "icon": "icons/mrx.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-31 01:29:43",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "15",
+            "name": "芦苇JK",
+            "package": "com.example.YYY",
+            "version": "1.0.0",
+            "description": "循环动态，GT1 2均可使用，如若表盘不显示，请重启手表",
+            "author": "新生",
+            "icon": "icons/lwjk.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-31 01:29:43",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "16",
+            "name": "守岸人",
+            "package": "com.example.shouanren",
+            "version": "1.0.0",
+            "description": "动态循环（付费进表盘群获取）",
+            "author": "Viper3",
+            "icon": "icons/s1.jpg",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-31 01:29:43",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "17",
+            "name": "岚火",
+            "package": "com.example.shouanren",
+            "version": "1.0.0",
+            "description": "循环动态眨眼，配合orbitV安装",
+            "author": "Viper3",
+            "icon": "icons/lh.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-31 01:29:43",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "18",
+            "name": "momo",
+            "package": "com.vivo.wf.watch103625",
+            "version": "1.0.0",
+            "description": "原创momo猫",
+            "author": "新生",
+            "icon": "icons/momo.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "19",
+            "name": "沙琪玛2.0",
+            "package": "com.vivo.wf.watch103626",
+            "version": "1.0.0",
+            "description": "动态表盘，支持点击播放，旋转表冠播放，息屏显示。",
+            "author": "新生",
+            "icon": "icons/sqm2.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "20",
+            "name": "友商是sb",
+            "package": "woshileijun",
+            "version": "1.0.0",
+            "description": "适配方表，使用流量安装",
+            "author": "X",
+            "icon": "icons/lj.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "21",
+            "name": "银狼",
+            "package": "yinlang",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "X",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "22",
+            "name": "秤亚津子",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表",
+            "author": "小米矿石",
+            "icon": "icons/cyjz.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "23",
+            "name": "一键三连",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "24",
+            "name": "雪之下雪乃",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/xn.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "25",
+            "name": "虚无",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "26",
+            "name": "阿玛特拉斯",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "27",
+            "name": "无敌",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "28",
+            "name": "四姑娘山",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "29",
+            "name": "斯卡蒂",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "30",
+            "name": "湿透",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "31",
+            "name": "李诗雅",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "32",
+            "name": "蕾塞cos",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "33",
+            "name": "蕾塞cos长动态版",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "34",
+            "name": "渐变大字体",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "35",
+            "name": "加州",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "36",
+            "name": "极简扫秒",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "37",
+            "name": "古月方源",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": true,
+            "price": "6元"
+        },
+        {
+            "id": "38",
+            "name": "电锯人",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "39",
+            "name": "纯粹扫秒",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/ty.png",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+        {
+            "id": "40",
+            "name": "白凝冰",
+            "package": "undefined",
+            "version": "1.2.0",
+            "description": "适配方表，使用流量安装",
+            "author": "新生",
+            "icon": "icons/bnb.jpg",
+            "link": "https://example.com/watchfacerpk/sports_1.5.0.rpk",
+            "created_at": "2026-01-30 04:19:58",
+            "isLocal": false,
+            "category": "数字时显",
+            "device": "方表通用",
+            "features": ["步数统计", "心率监测", "卡路里计算", "运动计时"],
+            "premium": false,
+            "price": "免费"
+        },
+    ];
+
     // 初始化
     document.addEventListener('DOMContentLoaded', async () => {
         initializeEventListeners();
-        
-        // 检查现有会话
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session?.user) {
-            currentUser = session.user;
-            updateUIForLoggedInUser(currentUser);
-            await loadMyApps();
-        }
-        
         await initData();
     });
-
-    // 验证密码强度
-    function validatePassword(password) {
-        const hasLower = /[a-z]/.test(password);
-        const hasUpper = /[A-Z]/.test(password);
-        const hasNumber = /[0-9]/.test(password);
-        
-        if (!hasLower || !hasUpper || !hasNumber || password.length < 8) {
-            return false;
-        }
-        return true;
-    }
-
-    // 用户登录
-    async function handleLogin(e) {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        
-        try {
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email,
-                password
-            });
-            
-            if (error) throw error;
-            
-            currentUser = data.user;
-            updateUIForLoggedInUser(currentUser);
-            hideDialogs();
-            showToast('登录成功!', 'success');
-            
-            // 加载用户数据
-            await loadMyApps();
-        } catch (error) {
-            showToast('登录失败: ' + error.message, 'error');
-        }
-    }
-
-    // 用户注册
-    async function handleSignup(e) {
-        e.preventDefault();
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-password-confirm').value;
-        
-        if (!validatePassword(password)) {
-            showToast('密码必须包含大小写字母和数字，且至少8个字符', 'error');
-            return;
-        }
-        
-        if (password !== confirmPassword) {
-            showToast('两次输入的密码不一致', 'error');
-            return;
-        }
-        
-        try {
-            const { data, error } = await supabaseClient.auth.signUp({
-                email,
-                password,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/auth-callback`
-                }
-            });
-            
-            if (error) throw error;
-            
-            hideDialogs();
-            showToast('注册成功!请查收验证邮件', 'success');
-        } catch (error) {
-            showToast('注册失败: ' + error.message, 'error');
-        }
-    }
-
-    // 请求重置密码
-    async function handlePasswordReset(e) {
-        e.preventDefault();
-        const email = document.getElementById('reset-email').value;
-        
-        try {
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`
-            });
-            
-            if (error) throw error;
-            
-            hideDialogs();
-            showToast('重置密码链接已发送到您的邮箱', 'success');
-        } catch (error) {
-            showToast('发送重置链接失败: ' + error.message, 'error');
-        }
-    }
-
-    // 用户登出
-    async function handleLogout() {
-        try {
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) throw error;
-            
-            currentUser = null;
-            document.getElementById('login-btn').style.display = 'block';
-            document.getElementById('signup-btn').style.display = 'block';
-            document.getElementById('logout-btn').style.display = 'none';
-            document.querySelector('.user-avatar').textContent = '👤';
-            document.getElementById('user-name').textContent = '我的空间';
-            
-            showToast('已退出登录', 'success');
-            showPage('home-page');
-        } catch (error) {
-            showToast('退出失败: ' + error.message, 'error');
-        }
-    }
-
-    // 更新已登录用户的UI
-    function updateUIForLoggedInUser(user) {
-        document.getElementById('login-btn').style.display = 'none';
-        document.getElementById('signup-btn').style.display = 'none';
-        document.getElementById('logout-btn').style.display = 'block';
-        document.querySelector('.user-avatar').textContent = user.email[0].toUpperCase();
-        document.getElementById('user-name').textContent = user.email;
-    }
 
     // 初始化数据
     async function initData() {
         try {
-            // 更新搜索统计
             document.getElementById('search-stats').textContent = '正在加载表盘数据...';
             
-            // 获取应用列表
-            const { data: apps, error: appErr } = await supabaseClient
-                .from('applications')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (appErr) throw appErr;
-            
-            // 过滤表盘应用（名称中包含"表盘"的应用）
-            appsData = (apps || []).filter(app => 
-                app.name && (app.name.includes('表盘') || app.name.includes('表盘') || 
-                (app.description && app.description.includes('表盘')))
-            );
-            
+            appsData = [...exampleApps];
             filteredApps = [...appsData];
             
-            // 更新搜索统计
-            updateSearchStats();
+            // 初始化筛选选项
+            initFilterOptions();
             
-            // 初始化视图和分页
+            updateSearchStats();
             setupSearchAndPagination();
             
+            showToast('表盘数据加载完成', 'success');
         } catch (error) {
             showToast('数据加载失败: ' + error.message, 'error');
             document.getElementById('search-stats').textContent = '数据加载失败';
             console.error('初始化错误:', error);
         }
+    }
+
+    // 初始化筛选选项
+    function initFilterOptions() {
+        // 收集所有分类
+        const categories = new Set(['全部分区']);
+        
+        appsData.forEach(app => {
+            if (app.category) categories.add(app.category);
+        });
+        
+        // 填充分类筛选
+        const categoryFilter = document.getElementById('category-filter');
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category === '全部分区' ? 'all' : category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
     }
 
     // 更新搜索统计
@@ -1395,34 +1666,37 @@
         const searchInput = document.getElementById('search-input');
         const searchTerm = searchInput ? searchInput.value.trim() : '';
         
-        if (searchTerm) {
-            searchStats.textContent = `找到 ${filteredApps.length} 个与"${searchTerm}"相关的表盘`;
-        } else {
-            searchStats.textContent = `共 ${filteredApps.length} 个表盘`;
+        let statsText = `找到 ${filteredApps.length} 个表盘`;
+        
+        if (currentCategory !== 'all') {
+            statsText += `，分区：${currentCategory}`;
         }
         
-        // 如果没有搜索结果
-        if (filteredApps.length === 0 && searchTerm) {
-            searchStats.innerHTML = `没有找到与"${searchTerm}"相关的表盘，请尝试其他关键词`;
+        if (searchTerm) {
+            statsText += `，搜索"${searchTerm}"`;
+        }
+        
+        searchStats.textContent = statsText;
+        
+        if (filteredApps.length === 0) {
+            searchStats.textContent = '没有找到符合条件的表盘，请尝试调整筛选条件';
         }
     }
 
     // 设置搜索和分页功能
     function setupSearchAndPagination() {
-        // 搜索功能 - 使用防抖减少频繁搜索
+        // 搜索功能
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.trim();
                 
-                // 清除之前的定时器
                 if (searchTimeout) {
                     clearTimeout(searchTimeout);
                 }
                 
-                // 设置新的定时器，延迟300ms执行搜索
                 searchTimeout = setTimeout(() => {
-                    filterApps(searchTerm);
+                    applyFiltersAndSort();
                     currentPage = 1;
                     renderApps();
                     updateSearchStats();
@@ -1430,14 +1704,59 @@
             });
         }
         
-        // 视图切换
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentView = this.dataset.view;
-                switchView(currentView);
-            });
+        // 筛选器变化
+        document.getElementById('category-filter')?.addEventListener('change', (e) => {
+            currentCategory = e.target.value;
+            applyFiltersAndSort();
+            currentPage = 1;
+            renderApps();
+            updateSearchStats();
+        });
+        
+        document.getElementById('sort-by')?.addEventListener('change', (e) => {
+            sortBy = e.target.value;
+            applyFiltersAndSort();
+            currentPage = 1;
+            renderApps();
+        });
+        
+        document.getElementById('sort-order')?.addEventListener('change', (e) => {
+            sortOrder = e.target.value;
+            applyFiltersAndSort();
+            currentPage = 1;
+            renderApps();
+        });
+        
+        // 视图切换 - 改为下拉菜单切换
+        document.getElementById('view-select')?.addEventListener('change', function() {
+            currentView = this.value;
+            
+            // 显示当前视图
+            switchView(currentView);
+            
+            // 显示切换提示
+            showToast(`已切换到${currentView === 'grid' ? '方格' : '列表'}视图`, 'info');
+        });
+        
+        // 重置筛选按钮
+        document.getElementById('reset-filters')?.addEventListener('click', () => {
+            document.getElementById('category-filter').value = 'all';
+            document.getElementById('sort-by').value = 'created_at';
+            document.getElementById('sort-order').value = 'desc';
+            document.getElementById('search-input').value = '';
+            document.getElementById('view-select').value = 'grid';
+            
+            currentCategory = 'all';
+            sortBy = 'created_at';
+            sortOrder = 'desc';
+            currentView = 'grid';
+            
+            applyFiltersAndSort();
+            currentPage = 1;
+            renderApps();
+            updateSearchStats();
+            switchView('grid');
+            showToast('筛选条件已重置', 'success');
         });
         
         // 分页按钮
@@ -1458,343 +1777,91 @@
             }
         });
         
-        // 初始渲染
+        // 初始应用筛选和排序
+        applyFiltersAndSort();
         renderApps();
     }
 
-    // 过滤应用
-    function filterApps(searchTerm) {
-        if (!searchTerm) {
-            filteredApps = [...appsData];
-        } else {
-            const lowerSearchTerm = searchTerm.toLowerCase();
-            filteredApps = appsData.filter(app => {
-                // 搜索名称
-                if (app.name && app.name.toLowerCase().includes(lowerSearchTerm)) return true;
+    // 应用筛选和排序
+    function applyFiltersAndSort() {
+        // 先根据搜索词筛选
+        const searchInput = document.getElementById('search-input');
+        const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        
+        filteredApps = appsData.filter(app => {
+            // 搜索过滤
+            if (searchTerm) {
+                const searchFields = [
+                    app.name,
+                    app.author,
+                    app.description,
+                    app.category
+                ].filter(Boolean).join(' ').toLowerCase();
                 
-                // 搜索描述
-                if (app.description && app.description.toLowerCase().includes(lowerSearchTerm)) return true;
-                
-                // 搜索包名
-                if (app.package && app.package.toLowerCase().includes(lowerSearchTerm)) return true;
-                
-                // 搜索作者
-                if (app.author_name && app.author_name.toLowerCase().includes(lowerSearchTerm)) return true;
-                
+                if (!searchFields.includes(searchTerm)) {
+                    return false;
+                }
+            }
+            
+            // 分类过滤
+            if (currentCategory !== 'all' && app.category !== currentCategory) {
                 return false;
-            });
-        }
+            }
+            
+            return true;
+        });
+        
+        // 排序
+        sortApps();
+    }
+
+    // 排序应用
+    function sortApps() {
+        filteredApps.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch (sortBy) {
+                case 'name':
+                    aValue = a.name || '';
+                    bValue = b.name || '';
+                    break;
+                case 'author':
+                    aValue = a.author || '';
+                    bValue = b.author || '';
+                    break;
+                case 'created_at':
+                default:
+                    aValue = new Date(a.created_at || 0).getTime();
+                    bValue = new Date(b.created_at || 0).getTime();
+                    break;
+            }
+            
+            if (sortOrder === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
     }
 
     // 切换视图
     function switchView(view) {
+        currentView = view;
+        
+        // 显示/隐藏对应的视图容器
         const gridView = document.getElementById('app-grid-view');
         const listView = document.getElementById('app-list-view');
         
         if (view === 'grid') {
-            gridView.classList.add('active');
-            listView.classList.remove('active');
+            gridView.style.display = 'grid';
+            listView.style.display = 'none';
         } else {
-            gridView.classList.remove('active');
-            listView.classList.add('active');
+            gridView.style.display = 'none';
+            listView.style.display = 'flex';
         }
         
-        // 重新渲染应用（保持当前分页）
+        // 重新渲染应用
         renderApps();
-    }
-
-    // 上传应用到 Supabase
-    async function saveApplication(appData, file) {
-        if (!currentUser) {
-            showToast('请先登录', 'error');
-            return;
-        }
-        
-        let filePath = null;
-
-        try {
-            showToast('开始上传表盘...', 'info');
-            
-            // 获取作者信息
-            const authorName = appData.author_name || currentUser.email;
-            
-            // 上传文件
-            const timestamp = Date.now();
-            const fileName = `${appData.package}_${timestamp}.rpk`;
-            filePath = `${currentUser.id}/${fileName}`;
-            
-            // 上传RPK文件
-            const { data: fileData, error: uploadError } = await supabaseClient.storage
-                .from(SUPABASE.STORAGE_BUCKET)
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
-            
-            if (uploadError) {
-                console.error('文件上传错误:', uploadError);
-                throw new Error(`文件上传失败: ${uploadError.message}`);
-            }
-            
-            // 获取公开URL
-            const { data: urlData } = supabaseClient.storage
-                .from(SUPABASE.STORAGE_BUCKET)
-                .getPublicUrl(filePath);
-
-            // 准备插入的数据
-            const appDataToInsert = {
-                name: appData.name,
-                package: appData.package,
-                version: appData.version,
-                description: appData.description,
-                download_url: urlData.publicUrl,
-                icon_url: appData.icon,
-                author_name: authorName,
-                author: currentUser.id,
-                created_at: new Date().toISOString(),
-                is_anonymous: false
-            };
-            
-            const { data: insertData, error: dbError } = await supabaseClient
-                .from('applications')
-                .insert(appDataToInsert)
-                .select();
-            
-            if (dbError) {
-                console.error('数据库插入错误:', dbError);
-                throw new Error(`数据库插入失败: ${dbError.message}`);
-            }
-            
-            showToast('表盘上传成功!', 'success');
-            await initData();
-            await loadMyApps();
-            
-            // 清空表单
-            clearUploadForm();
-            
-            // 返回首页
-            showPage('home-page');
-            
-        } catch (error) {
-            console.error('完整上传错误:', error);
-            showToast('上传失败: ' + error.message, 'error');
-            
-            // 清理已上传的文件
-            if (filePath && currentUser) {
-                try {
-                    const { error: removeError } = await supabaseClient.storage
-                        .from(SUPABASE.STORAGE_BUCKET)
-                        .remove([filePath]);
-                    
-                    if (removeError) {
-                        console.error('清理已上传文件失败:', removeError);
-                    }
-                } catch (cleanupError) {
-                    console.error('清理文件时发生错误:', cleanupError);
-                }
-            }
-        }
-    }
-
-    // 清空上传表单
-    function clearUploadForm() {
-        document.getElementById('app-file').value = '';
-        document.getElementById('app-name').value = '';
-        document.getElementById('app-package').value = '';
-        document.getElementById('app-version').value = '';
-        document.getElementById('app-description').value = '';
-        document.getElementById('app-author').value = '';
-        document.getElementById('app-icon').value = '';
-        document.getElementById('upload-preview').innerHTML = '<p>表盘预览将在这里显示</p>';
-    }
-
-    // 处理手动上传
-    async function handleManualUpload() {
-        if (!currentUser) {
-            showToast('请先登录', 'error');
-            return;
-        }
-        
-        try {
-            const fileInput = document.getElementById('app-file');
-            const files = fileInput.files;
-            const iconInput = document.getElementById('app-icon');
-            const iconFile = iconInput.files[0];
-
-            if (files.length === 0) {
-                showToast('请选择.rpk文件', 'error');
-                return;
-            }
-            if (files.length > 1) {
-                showToast('每次只能上传一个文件', 'error');
-                fileInput.value = '';
-                return;
-            }
-
-            const file = files[0];
-            const packageName = document.getElementById('app-package').value.trim();
-
-            // 检查包名是否已存在
-            const { data: existingApps, error: queryError } = await supabaseClient
-                .from('applications')
-                .select('package')
-                .eq('package', packageName);
-                
-            if (queryError) throw queryError;
-            
-            if (existingApps && existingApps.length > 0) {
-                showToast('该表盘已存在,请使用其他包名', 'error');
-                return;
-            }
-
-            const name = document.getElementById('app-name').value.trim();
-            const version = document.getElementById('app-version').value.trim();
-            const description = document.getElementById('app-description').value.trim();
-            const author = document.getElementById('app-author').value.trim();
-
-            if (!name || !packageName || !version) throw new Error('请填写所有必填字段');
-            if (!file) throw new Error('请选择.rpk文件');
-
-            // 解析RPK文件获取更多信息
-            const appInfo = await parseRPK(file);
-            if (!appInfo) throw new Error('无法解析表盘信息');
-
-            // 如果用户选择了自定义图标，使用它
-            if (iconFile) {
-                const iconBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.readAsDataURL(iconFile);
-                });
-                appInfo.icon = iconBase64;
-            }
-
-            // 检查是否为表盘应用
-            let finalName = name;
-            if (appInfo.isWatchface && !finalName.includes('（表盘）') && !finalName.includes('(表盘)')) {
-                finalName = `${finalName} (表盘)`;
-            }
-            
-            // 合并表单数据和解析数据
-            const newApp = {
-                ...appInfo,
-                name: finalName,
-                package: packageName,
-                version: version,
-                description: description,
-                author_name: author || currentUser.email
-            };
-
-            await saveApplication(newApp, file);
-        } catch (error) {
-            showToast('上传失败: ' + error.message, 'error');
-        }
-    }
-
-    // 处理文件选择(用于上传)
-    async function handleFileSelectForUpload(e) {
-        try {
-            const files = e.target.files;
-            if (files.length > 1) {
-                showToast('每次只能上传一个文件', 'error');
-                e.target.value = ''; // 清空已选文件
-                return;
-            }
-
-            const file = files[0];
-            if (!file) return;
-
-            if (!validateFile(file)) {
-                e.target.value = ''; // 清空无效文件
-                return;
-            }
-
-            const preview = document.getElementById('upload-preview');
-            preview.innerHTML = '';
-
-            const appInfo = await parseRPK(file);
-            if (appInfo) {
-                // 自动填充表单
-                document.getElementById('app-name').value = appInfo.name;
-                document.getElementById('app-package').value = appInfo.package;
-                document.getElementById('app-version').value = appInfo.version;
-                document.getElementById('app-description').value = appInfo.description || '';
-
-                // 显示预览
-                const img = document.createElement('img');
-                img.src = appInfo.icon;
-                preview.appendChild(img);
-
-                showToast('表盘信息已自动填充');
-            }
-        } catch (error) {
-            showToast('选择文件时出错: ' + error.message, 'error');
-            console.error('文件选择错误:', error);
-            e.target.value = ''; // 清空出错文件
-        }
-    }
-
-    // 加载我的应用
-    async function loadMyApps() {
-        if (!currentUser) {
-            myApps = [];
-            return;
-        }
-        
-        try {
-            // 获取用户上传的应用
-            const { data: apps, error: appsError } = await supabaseClient
-                .from('applications')
-                .select('*')
-                .eq('author', currentUser.id);
-            
-            if (appsError) throw appsError;
-            myApps = apps || [];
-            
-            // 如果正在我的表盘页面，更新显示
-            if (document.getElementById('my-apps-page').classList.contains('active')) {
-                renderMyApps();
-            }
-        } catch (error) {
-            console.error('加载我的表盘失败:', error);
-        }
-    }
-
-    // 渲染我的应用
-    function renderMyApps() {
-        const myAppsList = document.getElementById('my-apps-list');
-        myAppsList.innerHTML = '';
-        
-        if (myApps.length === 0) {
-            myAppsList.innerHTML = '<div class="empty-state"><p>您还没有上传过表盘</p></div>';
-            return;
-        }
-        
-        // 使用文档片段批量添加DOM元素
-        const fragment = document.createDocumentFragment();
-        
-        myApps.forEach(app => {
-            const card = document.createElement('div');
-            card.className = 'app-card';
-            card.dataset.id = app.id;
-            
-            const realSrc = app.icon_url || CONFIG.defaultIcon;
-            card.innerHTML = `
-                <img class="app-icon" src="${realSrc}" 
-                     alt="${app.name}" 
-                     onerror="this.src='${CONFIG.defaultIcon}'">
-                <h3 class="app-name">${app.name}</h3>
-                <div class="app-meta">
-                    <p>版本: ${app.version || '1.0.0'}</p>
-                    <p>作者: ${app.author_name || '匿名用户'}</p>
-                </div>
-            `;
-            
-            card.addEventListener('click', () => showAppDetail(app));
-            fragment.appendChild(card);
-        });
-        
-        myAppsList.appendChild(fragment);
     }
 
     // 渲染应用卡片
@@ -1805,16 +1872,17 @@
         card.className = 'app-card';
         card.dataset.id = app.id;
         
-        // 使用真实图标或默认图标
-        const realSrc = app.icon_url || CONFIG.defaultIcon;
+        const realSrc = app.icon || CONFIG.defaultIcon;
+        
+        // 列表视图不做任何改变，只在详情页改变
         card.innerHTML = `
             <img class="app-icon" src="${realSrc}" 
                  alt="${app.name}" 
                  onerror="this.src='${CONFIG.defaultIcon}'">
             <h3 class="app-name">${app.name}</h3>
             <div class="app-meta">
-                <p>版本: ${app.version || '1.0.0'}</p>
-                <p>作者: ${app.author_name || '匿名用户'}</p>
+                <p>${app.author || '匿名用户'}</p>
+                ${app.category ? `<p>${app.category}</p>` : ''}
             </div>
         `;
         
@@ -1828,19 +1896,28 @@
         item.className = 'app-list-item';
         item.dataset.id = app.id;
         
-        const realSrc = app.icon_url || CONFIG.defaultIcon;
+        const realSrc = app.icon || CONFIG.defaultIcon;
+        
+        // 列表视图不做任何改变，只在详情页改变
         item.innerHTML = `
             <img class="app-icon" src="${realSrc}" 
                  alt="${app.name}" 
                  onerror="this.src='${CONFIG.defaultIcon}'">
             <div class="app-info">
-                <h3 class="app-name">${app.name}</h3>
-                <div class="app-meta">
-                    <span>版本: ${app.version || '1.0.0'}</span>
-                    <span>作者: ${app.author_name || '匿名用户'}</span>
-                    <span>上传: ${app.created_at ? new Date(app.created_at).toLocaleDateString('zh-CN') : '未知'}</span>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <h3 class="app-name">${app.name}</h3>
+                    <span style="background: #f5f0ff; color: #5856d6; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                        ${app.category || '未分类'}
+                    </span>
                 </div>
-                <p class="app-description">${app.description || '暂无描述'}</p>
+                <div class="app-meta">
+                    <span>作者: ${app.author || '匿名用户'}</span>
+                    <span>版本: ${app.version || '1.0.0'}</span>
+                    ${app.device ? `<span style="color: #34c759;">📱 ${app.device}</span>` : ''}
+                </div>
+                <p style="color: #515154; font-size: 14px; margin-top: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    ${app.description || '暂无描述'}
+                </p>
             </div>
         `;
         
@@ -1853,9 +1930,6 @@
         const modal = document.getElementById('detail-modal');
         const modalBody = document.getElementById('modal-body');
         
-        // 检查是否是当前用户的应用
-        const isMyApp = currentUser ? app.author === currentUser.id : false;
-        
         // 格式化日期
         const formattedDate = app.created_at ? 
             new Date(app.created_at).toLocaleString('zh-CN', {
@@ -1866,94 +1940,125 @@
                 minute: '2-digit'
             }) : '未知';
         
+        // 根据是否付费显示不同的按钮
+        let actionButton = '';
+        if (app.premium) {
+            // 付费表盘：显示购买按钮
+            actionButton = `
+                <button class="btn btn-premium" onclick="handlePurchase('${app.id}', '${app.name}')" style="flex: 1;">
+                    <span>购买表盘</span>
+                    <span class="premium-price">${app.price || '6元'}</span>
+                </button>
+            `;
+        } else if (app.link) {
+            // 免费表盘且有链接：显示下载按钮
+            actionButton = `
+                <a href="${app.link}" class="btn btn-primary" target="_blank" style="flex: 1;">
+                    下载表盘
+                </a>
+            `;
+        }
+        
         modalBody.innerHTML = `
-            <div class="detail-section">
-                <img src="${app.icon_url || CONFIG.defaultIcon}" 
-                     alt="${app.name}" class="app-icon" style="width: 120px; height: 120px; border-radius: 24px; margin: 0 auto 20px; display: block; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
-                <h2>${app.name}</h2>
-                <p class="app-meta">版本: ${app.version || '1.0.0'}</p>
-                <p class="app-meta">作者: ${app.author_name || '匿名用户'}</p>
-                <p style="margin-top: 15px; line-height: 1.6;">${app.description || '暂无描述'}</p>
+            <div class="detail-header">
+                <img src="${app.icon || CONFIG.defaultIcon}" 
+                     alt="${app.name}" class="detail-icon">
+                <h2 class="detail-title">${app.name}</h2>
+                <p class="detail-subtitle">版本: ${app.version || '1.0.0'} | 作者: ${app.author || '匿名用户'}</p>
             </div>
-            <div class="detail-section">
-                <h3 class="detail-title">表盘信息</h3>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <strong>包名:</strong> ${app.package || '未提供'}
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
-                        <strong>上传时间:</strong> ${formattedDate}
-                    </div>
-                </div>
+            
+            <div class="detail-description">
+                ${app.description || '暂无描述'}
             </div>
-            <div class="detail-section">
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
-                    <a href="${app.download_url}" class="btn btn-primary" target="_blank" style="padding: 14px 28px; font-size: 17px; text-decoration: none; min-width: 150px; display: inline-flex; align-items: center; justify-content: center;">立即下载</a>
-                    ${isMyApp ? `<button class="btn btn-danger" onclick="deleteApp('${app.id}')" style="padding: 14px 28px; font-size: 17px; min-width: 150px; display: inline-flex; align-items: center; justify-content: center;">删除表盘</button>` : ''}
+            
+            <div class="detail-panel" id="detail-data-panel">
+                <div class="detail-item">
+                    <span class="detail-label">付费类型</span>
+                    <span class="detail-value">
+                        ${app.premium ? `<span class="premium-badge">付费表盘</span>` : '免费表盘'}
+                        ${app.price ? `<span class="premium-price">${app.price}</span>` : ''}
+                    </span>
                 </div>
-            </div>`;
+                <div class="detail-item">
+                    <span class="detail-label">包名</span>
+                    <span class="detail-value">${app.package || '未提供'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">适配机型</span>
+                    <span class="detail-value">${app.device || '通用机型'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">表盘分区</span>
+                    <span class="detail-value">${app.category || '未分类'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">更新时间</span>
+                    <span class="detail-value">${formattedDate}</span>
+                </div>
+                ${app.features && app.features.length > 0 ? `
+                <div class="detail-item">
+                    <span class="detail-label">功能特色</span>
+                    <span class="detail-value">${app.features.join('、')}</span>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="btn-group">
+                ${actionButton}
+                <button class="btn btn-outline" onclick="toggleDetailPanel()" style="flex: 1;">
+                    <span id="detail-toggle-text">显示详情</span>
+                </button>
+            </div>
+            
+            <p style="text-align: center; margin-top: 15px; color: #86868b; font-size: 14px;">
+                更多表盘资源请访问社区页面
+            </p>
+        `;
         
-        // 添加active类以触发动画
         modal.classList.add('active');
-        
-        // 绑定关闭按钮事件
         document.querySelector('.modal-close').onclick = closeModal;
     }
     
-    // 删除应用
-    async function deleteApp(appId) {
-        if (!currentUser) {
-            showToast('删除表盘需要登录', 'error');
-            return;
-        }
+    // 处理购买按钮点击
+    function handlePurchase(appId, appName) {
+        showToast(`正在处理购买 ${appName}，请稍候...`, 'info');
         
-        if (!confirm('确定要删除这个表盘吗？删除后无法恢复。')) return;
+        // 模拟购买流程
+        setTimeout(() => {
+            // 这里可以替换为实际的购买逻辑
+            // 例如跳转到支付页面或显示支付二维码
+            const confirmPurchase = confirm(`您确定要购买 "${appName}" 吗？\n\n价格：6元\n\n购买后请加QQ群联系管理员获取表盘文件。`);
+            
+            if (confirmPurchase) {
+                showToast(`已提交购买 ${appName} 的请求，请加QQ群联系管理员`, 'success');
+                
+                // 这里可以添加实际的支付处理逻辑
+                // 例如：window.open('https://your-payment-url.com?app=' + appId);
+                
+                // 关闭弹窗
+                closeModal();
+            }
+        }, 500);
+    }
+    
+    // 切换详情面板显示/隐藏
+    function toggleDetailPanel() {
+        const panel = document.getElementById('detail-data-panel');
+        const toggleText = document.getElementById('detail-toggle-text');
         
-        try {
-            // 获取应用信息
-            const { data: app, error: fetchError } = await supabaseClient
-                .from('applications')
-                .select('*')
-                .eq('id', appId)
-                .single();
-                
-            if (fetchError) throw fetchError;
-            
-            // 确保是应用所有者
-            if (app.author !== currentUser.id) {
-                throw new Error('您没有权限删除此表盘');
-            }
-
-            // 从URL中提取存储路径
-            const fileUrl = new URL(app.download_url);
-            const filePath = `${currentUser.id}/${fileUrl.pathname.split('/').pop()}`;
-            
-            // 删除存储文件
-            const { error: storageError } = await supabaseClient.storage
-                .from(SUPABASE.STORAGE_BUCKET)
-                .remove([filePath]);
-            
-            if (storageError) {
-                console.error('存储文件删除失败:', storageError);
-                // 继续执行，不阻止数据库记录的删除
-            }
-            
-            // 删除数据库记录
-            const { error: dbError } = await supabaseClient
-                .from('applications')
-                .delete()
-                .match({ id: appId, author: currentUser.id });
-                
-            if (dbError) throw dbError;
-            
-            showToast('表盘已删除', 'success');
-            closeModal();
-            await initData();
-            await loadMyApps();
-        } catch (error) {
-            showToast('删除失败: ' + error.message, 'error');
-            console.error('删除错误:', error);
+        if (panel.classList.contains('active')) {
+            panel.classList.remove('active');
+            toggleText.textContent = '显示详情';
+        } else {
+            panel.classList.add('active');
+            toggleText.textContent = '隐藏详情';
         }
+    }
+    
+    // 显示社区页面
+    function showCommunityPage() {
+        closeModal();
+        showPage('community-page');
     }
     
     // 页面切换
@@ -1965,7 +2070,6 @@
         const page = document.getElementById(pageId);
         if (page) page.classList.add('active');
         
-        // 底部导航栏高亮
         document.querySelectorAll('.nav-link').forEach(link => {
             if (link.dataset.page === pageId) {
                 link.classList.add('active');
@@ -1974,19 +2078,8 @@
             }
         });
         
-        // 特殊页面处理
-        if (pageId === 'my-apps-page') renderMyApps();
-        
-        // 当切换到首页时，确保搜索和分页功能正常工作
         if (pageId === 'home-page') {
             setupSearchAndPagination();
-        }
-        
-        // 检查是否需要登录才能访问上传页面
-        if (pageId === 'upload-page' && !currentUser) {
-            showToast('请先登录才能上传表盘', 'error');
-            showDialog('login-dialog');
-            showPage('profile-page');
         }
     }
 
@@ -1997,26 +2090,11 @@
         showPage(pageId);
     }
 
-    // 显示对话框
-    function showDialog(id) {
-        document.getElementById('auth-backdrop').style.display = 'block';
-        document.getElementById(id).style.display = 'block';
-    }
-
-    // 隐藏所有对话框
-    function hideDialogs() {
-        document.getElementById('auth-backdrop').style.display = 'none';
-        document.querySelectorAll('.auth-dialog').forEach(dialog => {
-            dialog.style.display = 'none';
-        });
-    }
-
     // 关闭弹窗函数
     function closeModal() {
         const modal = document.getElementById('detail-modal');
         modal.classList.remove('active');
         
-        // 清理内容
         setTimeout(() => {
             document.getElementById('modal-body').innerHTML = '';
         }, 300);
@@ -2030,104 +2108,6 @@
         document.getElementById('toast-container').appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
-
-    // 验证文件
-    function validateFile(file) {
-        if (!file.name.endsWith('.rpk')) {
-            showToast('请选择.rpk文件', 'error');
-            return false;
-        }
-        if (file.size > 5 * 1024 * 1024) { // 5MB限制
-            showToast('文件大小不能超过5MB', 'error');
-            return false;
-        }
-        return true;
-    }
-
-    // 解析RPK文件
-    async function parseRPK(file) {
-        try {
-            const zip = new JSZip();
-            const contents = await zip.loadAsync(file);
-            
-            // 读取 manifest.json
-            const manifestFile = contents.file('manifest.json');
-            if (!manifestFile) {
-                const errorMsg = '无法找到 manifest.json 文件';
-                showToast('RPK解析错误: ' + errorMsg, 'error');
-                throw new Error(errorMsg);
-            }
-            
-            const manifestContent = await manifestFile.async('text');
-            const manifest = JSON.parse(manifestContent);
-            
-            // 尝试在根目录查找图标文件
-            const allFiles = Object.keys(contents.files);
-            const iconFile = allFiles
-                .filter(path => !path.includes('/') && /\.(png|jpg|jpeg|vug)$/i.test(path))
-                .map(path => contents.file(path))
-                .find(file => file !== null);
-                
-            // 如果找不到图标文件，使用默认图标
-            let iconBase64 = CONFIG.defaultIcon;
-            if (iconFile) {
-                const iconBlob = await iconFile.async('blob');
-                iconBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.readAsDataURL(iconBlob);
-                });
-            } else {
-                showToast('未找到图标文件，将使用默认图标', 'warning');
-            }
-            
-            // 验证必填字段
-            if (!manifest.package) {
-                const errorMsg = '缺少必填字段: package';
-                showToast('RPK解析错误: ' + errorMsg, 'error');
-                throw new Error(errorMsg);
-            }
-            if (!manifest.name) {
-                const errorMsg = '缺少必填字段: name';
-                showToast('RPK解析错误: ' + errorMsg, 'error');
-                throw new Error(errorMsg);
-            }
-            if (!manifest.versionCode) {
-                const errorMsg = '缺少必填字段: versionCode';
-                showToast('RPK解析错误: ' + errorMsg, 'error');
-                throw new Error(errorMsg);
-            }
-            
-            // 检查是否为表盘应用
-            let appName = manifest.name;
-            const isWatchface = manifest.router && manifest.router.watchfaces;
-            
-            if (isWatchface && !appName.includes('表盘')) {
-                appName = `${appName} (表盘)`;
-            }
-            
-            // 从manifest提取数据
-            return {
-                name: appName,
-                package: manifest.package,
-                version: manifest.versionName || `${manifest.versionCode}`,
-                versionCode: manifest.versionCode,
-                icon: iconBase64,
-                description: manifest.description || '',
-                features: manifest.features || [],
-                permissions: manifest.permissions || [],
-                appCategory: manifest.categories || ['表盘'],
-                deviceTypeList: manifest.deviceTypes || ['watch'],
-                distributionRules: {
-                    minAPILevel: manifest.minPlatformVersion || 1
-                },
-                isWatchface: isWatchface
-            };
-        } catch (error) {
-            // 错误已经在具体检查点处理，这里不需要重复显示
-            throw error;
-        }
-    }
     
     // 渲染应用列表
     function renderApps() {
@@ -2135,20 +2115,20 @@
         const endIndex = startIndex + itemsPerPage;
         const pageApps = filteredApps.slice(startIndex, endIndex);
         
-        // 清空容器
         const gridContainer = document.getElementById('app-grid-view');
         const listContainer = document.getElementById('app-list-view');
+        
+        // 清空容器
         gridContainer.innerHTML = '';
         listContainer.innerHTML = '';
         
-        // 如果没有应用，显示提示
         if (pageApps.length === 0) {
             const searchInput = document.getElementById('search-input');
             const searchTerm = searchInput ? searchInput.value.trim() : '';
             
             let message = '暂无表盘数据';
-            if (searchTerm) {
-                message = `没有找到与"${searchTerm}"相关的表盘`;
+            if (searchTerm || currentCategory !== 'all') {
+                message = '没有找到符合条件的表盘，请尝试调整筛选条件';
             }
             
             gridContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
@@ -2157,9 +2137,8 @@
             return;
         }
         
-        // 渲染当前页的应用
+        // 根据当前视图渲染
         pageApps.forEach(app => {
-            // 根据当前视图渲染对应内容
             if (currentView === 'grid') {
                 renderAppCard(app, gridContainer);
             } else {
@@ -2167,7 +2146,6 @@
             }
         });
         
-        // 更新分页控件
         updatePagination();
     }
 
@@ -2188,15 +2166,12 @@
         
         pagination.style.display = 'flex';
         
-        // 更新按钮状态
         if (prevBtn) prevBtn.disabled = currentPage === 1;
         if (nextBtn) nextBtn.disabled = currentPage === totalPages;
         
-        // 生成页码
         if (pageNumbers) {
             pageNumbers.innerHTML = '';
             
-            // 显示最多7个页码
             let startPage = Math.max(1, currentPage - 3);
             let endPage = Math.min(totalPages, startPage + 6);
             
@@ -2204,7 +2179,6 @@
                 startPage = Math.max(1, endPage - 6);
             }
             
-            // 添加第一页
             if (startPage > 1) {
                 const firstPageBtn = document.createElement('div');
                 firstPageBtn.className = 'page-number';
@@ -2237,7 +2211,6 @@
                 pageNumbers.appendChild(pageBtn);
             }
             
-            // 添加最后一页
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
                     const ellipsis = document.createElement('div');
@@ -2278,122 +2251,12 @@
         document.getElementById('search-input')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                const searchTerm = e.target.value.trim();
-                filterApps(searchTerm);
+                applyFiltersAndSort();
                 currentPage = 1;
                 renderApps();
                 updateSearchStats();
             }
         });
-        
-        // 用户功能
-        document.getElementById('upload-feature').addEventListener('click', () => {
-            if (!currentUser) {
-                showToast('请先登录才能上传表盘', 'error');
-                showDialog('login-dialog');
-                return;
-            }
-            showPage('upload-page');
-        });
-        
-        document.getElementById('my-apps-feature').addEventListener('click', () => {
-            if (!currentUser) {
-                showToast('请先登录才能查看我的表盘', 'error');
-                showDialog('login-dialog');
-                return;
-            }
-            showPage('my-apps-page');
-        });
-        
-        // 按钮事件
-        document.getElementById('submit-upload').addEventListener('click', handleManualUpload);
-        document.getElementById('login-btn').addEventListener('click', () => showDialog('login-dialog'));
-        document.getElementById('signup-btn').addEventListener('click', () => showDialog('signup-dialog'));
-        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            showDialog('reset-password-dialog');
-        });
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-        
-        // 文件上传相关
-        document.getElementById('app-file').addEventListener('change', handleFileSelectForUpload);
-        document.getElementById('app-icon').addEventListener('change', handleIconSelect);
-        
-        // 认证对话框
-        document.getElementById('auth-backdrop').addEventListener('click', hideDialogs);
-        document.getElementById('login-form').addEventListener('submit', handleLogin);
-        document.getElementById('signup-form').addEventListener('submit', handleSignup);
-        document.getElementById('reset-password-form').addEventListener('submit', handlePasswordReset);
-        
-        // 实时密码验证
-        document.getElementById('signup-password').addEventListener('input', (e) => {
-            const password = e.target.value;
-            const isValid = validatePassword(password);
-            e.target.style.borderColor = password && !isValid ? '#ff3b30' : '';
-        });
-        
-        // 监听认证状态变化
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session?.user) {
-                currentUser = session.user;
-                updateUIForLoggedInUser(currentUser);
-                loadMyApps();
-                
-                // 如果用户是从上传页面过来的，自动跳转到上传页面
-                if (document.getElementById('upload-page').classList.contains('active')) {
-                    showPage('upload-page');
-                }
-            } else if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                document.getElementById('login-btn').style.display = 'block';
-                document.getElementById('signup-btn').style.display = 'block';
-                document.getElementById('logout-btn').style.display = 'none';
-                document.querySelector('.user-avatar').textContent = '👤';
-                document.getElementById('user-name').textContent = '我的空间';
-                
-                // 如果用户在上传页面，跳转到我的页面
-                if (document.getElementById('upload-page').classList.contains('active')) {
-                    showPage('profile-page');
-                }
-            }
-        });
-    }
-
-    // 处理图标选择
-    function handleIconSelect(e) {
-        try {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // 验证图片格式
-            if (!file.type.match('image.*')) {
-                showToast('请选择图片文件', 'error');
-                e.target.value = '';
-                return;
-            }
-
-            // 验证文件大小
-            if (file.size > 1 * 1024 * 1024) { // 1MB限制
-                showToast('图标文件大小不能超过1MB', 'error');
-                e.target.value = '';
-                return;
-            }
-
-            // 读取并预览图标
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const preview = document.getElementById('upload-preview');
-                preview.innerHTML = '';
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                preview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        } catch (error) {
-            showToast('选择图标时出错: ' + error.message, 'error');
-            console.error('图标选择错误:', error);
-            e.target.value = '';
-        }
     }
     </script>
 </body>
