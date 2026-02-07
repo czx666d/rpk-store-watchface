@@ -313,6 +313,42 @@
             color: white;
         }
         
+        /* 标签样式 */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .tag-badge {
+            background: linear-gradient(135deg, #007aff, #0056cc);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .remove-tag {
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .remove-tag:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
         /* 代码编辑器样式 */
         .code-actions {
             background: white;
@@ -766,6 +802,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (parsedData.watchfaces && Array.isArray(parsedData.watchfaces)) {
                         watchfaceData = parsedData.watchfaces;
                     }
+                    
+                    // 数据迁移：如果旧数据有category或type字段，转换为tags字段
+                    watchfaceData = migrateOldData(watchfaceData);
+                    
                     renderWatchfaceGrid();
                 } catch (error) {
                     console.error('加载数据失败:', error);
@@ -775,6 +815,46 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 loadExampleData();
             }
+        }
+        
+        // 数据迁移函数：将旧的category和type字段合并为tags数组
+        function migrateOldData(data) {
+            return data.map(item => {
+                // 如果已经有tags字段，直接返回
+                if (item.tags && Array.isArray(item.tags)) {
+                    return item;
+                }
+                
+                // 否则从category和type创建tags数组
+                const tags = [];
+                
+                // 添加category到tags
+                if (item.category) {
+                    if (Array.isArray(item.category)) {
+                        tags.push(...item.category);
+                    } else {
+                        tags.push(item.category);
+                    }
+                }
+                
+                // 添加type到tags
+                if (item.type) {
+                    if (Array.isArray(item.type)) {
+                        tags.push(...item.type);
+                    } else {
+                        tags.push(item.type);
+                    }
+                }
+                
+                // 去重
+                const uniqueTags = [...new Set(tags.filter(Boolean))];
+                
+                // 返回新对象
+                return {
+                    ...item,
+                    tags: uniqueTags.length > 0 ? uniqueTags : ['原创'] // 默认标签
+                };
+            });
         }
         
         // 加载示例数据
@@ -788,8 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "description": "这是一个示例表盘",
                     "author": "示例作者",
                     "icon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg==",
-                    "category": "数字时显",
-                    "type": "原创",
+                    "tags": ["数字时显", "原创"],
                     "device": "通用机型",
                     "features": ["时间显示", "日期显示"],
                     "premium": false,
@@ -836,13 +915,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('')
                 : '';
             
+            const tagsHTML = watchface.tags && Array.isArray(watchface.tags) 
+                ? watchface.tags.map(tag => `
+                    <span class="tag-badge">
+                        ${tag}
+                        <span class="remove-tag" onclick="removeTag(${index}, '${tag.replace(/'/g, "\\'")}')">×</span>
+                    </span>
+                `).join('')
+                : '';
+            
             card.innerHTML = `
                 <div class="card-header">
                     <div class="card-title">${watchface.name || '未命名表盘'}</div>
                     <button class="expand-btn" onclick="toggleWatchfaceForm(${index})">▼</button>
                 </div>
                 <div style="margin-bottom: 10px; color: #86868b; font-size: 14px;">
-                    ${watchface.author || '未知作者'} | ${watchface.category || '未分类'} | ${watchface.type || '原创'}
+                    ${watchface.author || '未知作者'} | ${watchface.tags ? watchface.tags.slice(0, 3).join('、') : '无标签'}
                 </div>
                 
                 <div class="watchface-form" id="form-${index}">
@@ -886,28 +974,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div class="form-section">
-                        <div class="section-title">分类信息</div>
+                        <div class="section-title">标签管理</div>
+                        <div class="tags-container" id="tags-${index}">
+                            ${tagsHTML}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" class="form-input" 
+                                   id="new-tag-${index}" 
+                                   placeholder="输入标签，按回车添加"
+                                   onkeypress="if(event.key === 'Enter') addTag(${index})">
+                            <button class="btn btn-outline" onclick="addTag(${index})" style="white-space: nowrap;">
+                                添加标签
+                            </button>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #86868b;">
+                            提示：常用标签有：数字时显、简约风格、原表风格、科幻风格、全家桶、定制、移植oppo、仿Apple、原创等
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">设备信息</div>
                         <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">分类</label>
-                                <select class="form-select" onchange="updateField(${index}, 'category', this.value)">
-                                    <option value="数字时显" ${watchface.category === '数字时显' ? 'selected' : ''}>数字时显</option>
-                                    <option value="简约风格" ${watchface.category === '简约风格' ? 'selected' : ''}>简约风格</option>
-                                    <option value="原表风格" ${watchface.category === '原表风格' ? 'selected' : ''}>原表风格</option>
-                                    <option value="科幻风格" ${watchface.category === '科幻风格' ? 'selected' : ''}>科幻风格</option>
-                                    <option value="其他" ${!watchface.category ? 'selected' : ''}>其他</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">类型</label>
-                                <select class="form-select" onchange="updateField(${index}, 'type', this.value)">
-                                    <option value="全家桶" ${watchface.type === '全家桶' ? 'selected' : ''}>全家桶</option>
-                                    <option value="全家桶" ${watchface.type === '定制' ? 'selected' : ''}>定制</option>
-                                    <option value="移植oppo" ${watchface.type === '移植oppo' ? 'selected' : ''}>移植oppo</option>
-                                    <option value="仿Apple" ${watchface.type === '仿Apple' ? 'selected' : ''}>仿Apple</option>
-                                    <option value="原创" ${watchface.type === '原创' || !watchface.type ? 'selected' : ''}>原创</option>
-                                </select>
-                            </div>
                             <div class="form-group">
                                 <label class="form-label">适配设备</label>
                                 <input type="text" class="form-input" 
@@ -1017,6 +1104,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // 添加标签
+        function addTag(index) {
+            const input = document.getElementById(`new-tag-${index}`);
+            const tag = input.value.trim();
+            
+            if (tag) {
+                if (!watchfaceData[index].tags) {
+                    watchfaceData[index].tags = [];
+                }
+                
+                if (!watchfaceData[index].tags.includes(tag)) {
+                    watchfaceData[index].tags.push(tag);
+                    
+                    // 更新UI
+                    const container = document.getElementById(`tags-${index}`);
+                    const badge = document.createElement('span');
+                    badge.className = 'tag-badge';
+                    badge.innerHTML = `
+                        ${tag}
+                        <span class="remove-tag" onclick="removeTag(${index}, '${tag.replace(/'/g, "\\'")}')">×</span>
+                    `;
+                    container.appendChild(badge);
+                    
+                    input.value = '';
+                    showMessage('标签已添加', 'success');
+                } else {
+                    showMessage('标签已存在', 'warning');
+                }
+            }
+        }
+        
+        // 移除标签
+        function removeTag(index, tag) {
+            if (watchfaceData[index] && watchfaceData[index].tags) {
+                watchfaceData[index].tags = watchfaceData[index].tags.filter(t => t !== tag);
+                
+                // 重新渲染标签
+                const container = document.getElementById(`tags-${index}`);
+                container.innerHTML = watchfaceData[index].tags.map(t => `
+                    <span class="tag-badge">
+                        ${t}
+                        <span class="remove-tag" onclick="removeTag(${index}, '${t.replace(/'/g, "\\'")}')">×</span>
+                    </span>
+                `).join('');
+            }
+        }
+        
         // 添加功能特色
         function addFeature(index) {
             const input = document.getElementById(`new-feature-${index}`);
@@ -1075,8 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: "",
                 author: "",
                 icon: "",
-                category: "数字时显",
-                type: "原创",
+                tags: ["原创"],
                 device: "vivo/iQOO watch GT1/2",
                 features: [],
                 premium: false,
@@ -1223,18 +1356,41 @@ function processImportData(jsonData) {
         }
         return true;
     }).map(item => {
-        // 确保类型字段存在
-        if (!item.type) {
-            item.type = '原创';
+        // 数据迁移：如果旧数据有category或type字段，转换为tags字段
+        if (!item.tags || !Array.isArray(item.tags)) {
+            const tags = [];
+            
+            if (item.category) {
+                if (Array.isArray(item.category)) {
+                    tags.push(...item.category);
+                } else {
+                    tags.push(item.category);
+                }
+            }
+            
+            if (item.type) {
+                if (Array.isArray(item.type)) {
+                    tags.push(...item.type);
+                } else {
+                    tags.push(item.type);
+                }
+            }
+            
+            // 去重
+            const uniqueTags = [...new Set(tags.filter(Boolean))];
+            item.tags = uniqueTags.length > 0 ? uniqueTags : ['原创'];
         }
-        // 确保设备字段存在
-        if (!item.device) {
-            item.device = '通用机型';
-        }
+        
         // 确保features是数组
         if (!Array.isArray(item.features)) {
             item.features = [];
         }
+        
+        // 确保device字段存在
+        if (!item.device) {
+            item.device = '通用机型';
+        }
+        
         return item;
     });
     
@@ -1292,6 +1448,9 @@ function processImportData(jsonData) {
                 } else if (jsonData.meta && jsonData.watchfaces) {
                     watchfaceData = jsonData.watchfaces;
                 }
+                
+                // 数据迁移
+                watchfaceData = migrateOldData(watchfaceData);
                 
                 renderWatchfaceGrid();
                 showMessage('修改已应用', 'success');
@@ -1416,8 +1575,7 @@ function processImportData(jsonData) {
                     description: "从RPK文件导入的表盘",
                     author: "未知作者",
                     icon: "",
-                    category: "数字时显",
-                    type: "原创",
+                    tags: ["原创"],
                     device: "vivo/iQOO watch GT1/2",
                     features: ["RPK格式"],
                     premium: false,
@@ -1436,8 +1594,17 @@ function processImportData(jsonData) {
                         if (config.version) newWatchface.version = config.version;
                         if (config.description) newWatchface.description = config.description;
                         if (config.device) newWatchface.device = config.device;
-                        if (config.category) newWatchface.category = config.category;
-                        if (config.type) newWatchface.type = config.type;
+                        
+                        // 处理标签
+                        if (config.tags && Array.isArray(config.tags)) {
+                            newWatchface.tags = config.tags;
+                        } else if (config.category) {
+                            newWatchface.tags = [config.category];
+                            if (config.type && config.type !== config.category) {
+                                newWatchface.tags.push(config.type);
+                            }
+                        }
+                        
                         if (config.features) newWatchface.features = config.features;
                         if (config.premium !== undefined) newWatchface.premium = config.premium;
                         if (config.price) newWatchface.price = config.price;
@@ -1566,7 +1733,7 @@ function processImportData(jsonData) {
                         version: "2.0",
                         export_date: new Date().toISOString(),
                         count: watchfaceData.length,
-                        note: "包含新增的type字段"
+                        note: "使用tags字段替代category和type"
                     },
                     watchfaces: watchfaceData
                 };

@@ -921,6 +921,62 @@
             color: white;
         }
         
+        /* 类别标签样式 */
+        .tag-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .tag-数字时显 {
+            background: linear-gradient(135deg, #007aff, #0056cc);
+            color: white;
+        }
+        
+        .tag-简约风格 {
+            background: linear-gradient(135deg, #34c759, #30b84c);
+            color: white;
+        }
+        
+        .tag-原表风格 {
+            background: linear-gradient(135deg, #5856d6, #af52de);
+            color: white;
+        }
+        
+        .tag-科幻风格 {
+            background: linear-gradient(135deg, #ff9500, #ff5e3a);
+            color: white;
+        }
+        
+        .tag-全家桶 {
+            background: linear-gradient(135deg, #ff2d55, #ff3b30);
+            color: white;
+        }
+        
+        .tag-定制 {
+            background: linear-gradient(135deg, #5ac8fa, #34c759);
+            color: white;
+        }
+        
+        .tag-移植oppo {
+            background: linear-gradient(135deg, #ffcc00, #ff9500);
+            color: white;
+        }
+        
+        .tag-仿Apple {
+            background: linear-gradient(135deg, #8e8e93, #1d1d1f);
+            color: white;
+        }
+        
+        .tag-原创 {
+            background: linear-gradient(135deg, #af52de, #5856d6);
+            color: white;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 768px) {
             .filter-toolbar {
@@ -1016,18 +1072,11 @@
                     <span class="search-icon">🔍</span>
                 </div>
                 
+                <!-- 修改：合并为一个类别筛选器 -->
                 <div class="filter-group">
-                    <div class="filter-label">分区分类</div>
+                    <div class="filter-label">类别筛选</div>
                     <select class="filter-select" id="category-filter">
-                        <option value="all">全部分区</option>
-                    </select>
-                </div>
-                
-                <!-- 新增类型筛选器 -->
-                <div class="filter-group">
-                    <div class="filter-label">类型筛选</div>
-                    <select class="filter-select" id="type-filter">
-                        <option value="all">全部类型</option>
+                        <option value="all">全部类别</option>
                     </select>
                 </div>
                 
@@ -1239,7 +1288,6 @@
         
         // 筛选状态
         let currentCategory = 'all';
-        let currentType = 'all'; // 新增：类型筛选
         let sortBy = 'created_at';
         let sortOrder = 'desc';
 
@@ -1248,9 +1296,68 @@
             defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='
         };
 
-        // 示例表盘数据 - 添加type字段
+        // 示例表盘数据 - 修改：使用tags字段替代category和type
         const exampleApps = [
-        
+            {
+                id: "example_1",
+                name: "简约数字表盘",
+                package: "com.vivo.wf.watch001",
+                version: "1.0.0",
+                description: "简约风格的数字表盘，清晰显示时间日期",
+                author: "禾芒新屿",
+                icon: CONFIG.defaultIcon,
+                tags: ["数字时显", "简约风格", "原创"],
+                device: "vivo/iQOO watch GT1/2",
+                features: ["时间显示", "日期显示", "电量显示"],
+                premium: false,
+                price: "免费",
+                created_at: "2023-10-15 14:30:00"
+            },
+            {
+                id: "example_2",
+                name: "Apple风格表盘",
+                package: "com.vivo.wf.watch002",
+                version: "1.2.0",
+                description: "仿Apple风格的精致表盘",
+                author: "设计者A",
+                icon: CONFIG.defaultIcon,
+                tags: ["原表风格", "仿Apple", "全家桶"],
+                device: "vivo/iQOO watch GT1/2",
+                features: ["时间显示", "日期显示", "步数显示", "天气显示"],
+                premium: true,
+                price: "6元",
+                created_at: "2023-10-20 09:15:00"
+            },
+            {
+                id: "example_3",
+                name: "OPPO移植表盘",
+                package: "com.vivo.wf.watch003",
+                version: "1.1.0",
+                description: "从OPPO手表移植的经典表盘",
+                author: "移植大师",
+                icon: CONFIG.defaultIcon,
+                tags: ["移植oppo", "科幻风格"],
+                device: "vivo/iQOO watch GT1/2",
+                features: ["时间显示", "心率显示", "运动数据"],
+                premium: false,
+                price: "免费",
+                created_at: "2023-10-25 16:45:00"
+            },
+            {
+                id: "example_4",
+                name: "定制商务表盘",
+                package: "com.vivo.wf.watch004",
+                version: "2.0.0",
+                description: "专为商务人士定制的表盘",
+                author: "定制专家",
+                icon: CONFIG.defaultIcon,
+                tags: ["定制", "简约风格"],
+                device: "vivo/iQOO watch GT1/2",
+                features: ["时间显示", "日程提醒", "商务风格"],
+                premium: true,
+                price: "8元",
+                created_at: "2023-11-01 11:20:00"
+            }
         ];
 
         // 初始化
@@ -1285,6 +1392,9 @@
                     appsData = [...exampleApps];
                 }
                 
+                // 数据迁移：如果旧数据有category或type字段，转换为tags字段
+                appsData = migrateOldData(appsData);
+                
                 filteredApps = [...appsData];
                 
                 // 初始化筛选选项
@@ -1300,40 +1410,74 @@
                 console.error('初始化错误:', error);
             }
         }
+        
+        // 数据迁移函数：将旧的category和type字段合并为tags数组
+        function migrateOldData(data) {
+            return data.map(item => {
+                // 如果已经有tags字段，直接返回
+                if (item.tags && Array.isArray(item.tags)) {
+                    return item;
+                }
+                
+                // 否则从category和type创建tags数组
+                const tags = [];
+                
+                // 添加category到tags
+                if (item.category) {
+                    if (Array.isArray(item.category)) {
+                        tags.push(...item.category);
+                    } else {
+                        tags.push(item.category);
+                    }
+                }
+                
+                // 添加type到tags
+                if (item.type) {
+                    if (Array.isArray(item.type)) {
+                        tags.push(...item.type);
+                    } else {
+                        tags.push(item.type);
+                    }
+                }
+                
+                // 去重
+                const uniqueTags = [...new Set(tags.filter(Boolean))];
+                
+                // 返回新对象
+                return {
+                    ...item,
+                    tags: uniqueTags.length > 0 ? uniqueTags : ['原创'] // 默认标签
+                };
+            });
+        }
 
         // 初始化筛选选项
         function initFilterOptions() {
-            // 收集所有分类
-            const categories = new Set(['全部分区']);
-            const types = new Set(['全家桶','定制', '移植oppo', '仿Apple', '原创']);
+            // 收集所有标签
+            const allTags = new Set();
             
             appsData.forEach(app => {
-                if (app.category) categories.add(app.category);
-                if (app.type) types.add(app.type);
+                if (app.tags && Array.isArray(app.tags)) {
+                    app.tags.forEach(tag => {
+                        if (tag && tag.trim()) {
+                            allTags.add(tag.trim());
+                        }
+                    });
+                }
             });
             
             // 填充分类筛选
             const categoryFilter = document.getElementById('category-filter');
-            categoryFilter.innerHTML = '<option value="all">全部分区</option>';
-            categories.forEach(category => {
-                if (category !== '全部分区') {
-                    const option = document.createElement('option');
-                    option.value = category;
-                    option.textContent = category;
-                    categoryFilter.appendChild(option);
-                }
-            });
+            categoryFilter.innerHTML = '<option value="all">全部类别</option>';
             
-            // 填充类型筛选
-            const typeFilter = document.getElementById('type-filter');
-            typeFilter.innerHTML = '<option value="all">全部类型</option>';
-            types.forEach(type => {
-                if (type !== '全部类型') {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = type;
-                    typeFilter.appendChild(option);
-                }
+            // 将标签按字母顺序排序
+            const sortedTags = Array.from(allTags).sort();
+            
+            sortedTags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag;
+                categoryFilter.appendChild(option);
             });
         }
 
@@ -1346,11 +1490,7 @@
             let statsText = `找到 ${filteredApps.length} 个表盘`;
             
             if (currentCategory !== 'all') {
-                statsText += `，分区：${currentCategory}`;
-            }
-            
-            if (currentType !== 'all') {
-                statsText += `，类型：${currentType}`;
+                statsText += `，类别：${currentCategory}`;
             }
             
             if (searchTerm) {
@@ -1394,15 +1534,6 @@
                 updateSearchStats();
             });
             
-            // 类型筛选器变化
-            document.getElementById('type-filter')?.addEventListener('change', (e) => {
-                currentType = e.target.value;
-                applyFiltersAndSort();
-                currentPage = 1;
-                renderApps();
-                updateSearchStats();
-            });
-            
             document.getElementById('sort-by')?.addEventListener('change', (e) => {
                 sortBy = e.target.value;
                 applyFiltersAndSort();
@@ -1435,10 +1566,8 @@
                 document.getElementById('sort-order').value = 'desc';
                 document.getElementById('search-input').value = '';
                 document.getElementById('view-select').value = 'grid';
-                document.getElementById('type-filter').value = 'all';
                 
                 currentCategory = 'all';
-                currentType = 'all';
                 sortBy = 'created_at';
                 sortOrder = 'desc';
                 currentView = 'grid';
@@ -1486,24 +1615,22 @@
                     const searchFields = [
                         app.name,
                         app.author,
-                        app.description,
-                        app.category,
-                        app.type
+                        app.description
                     ].filter(Boolean).join(' ').toLowerCase();
                     
-                    if (!searchFields.includes(searchTerm)) {
+                    // 搜索标签
+                    const tagSearch = app.tags ? app.tags.join(' ').toLowerCase() : '';
+                    
+                    if (!searchFields.includes(searchTerm) && !tagSearch.includes(searchTerm)) {
                         return false;
                     }
                 }
                 
-                // 分类过滤
-                if (currentCategory !== 'all' && app.category !== currentCategory) {
-                    return false;
-                }
-                
-                // 类型过滤
-                if (currentType !== 'all' && app.type !== currentType) {
-                    return false;
+                // 标签过滤
+                if (currentCategory !== 'all') {
+                    if (!app.tags || !Array.isArray(app.tags) || !app.tags.includes(currentCategory)) {
+                        return false;
+                    }
                 }
                 
                 return true;
@@ -1562,33 +1689,32 @@
             renderApps();
         }
 
-        // 渲染应用卡片 - 修改：方格视图不显示徽章
-        function renderAppCard(app, container = null) {
-            if (!container) container = document.getElementById('app-grid-view');
-            
-            const card = document.createElement('div');
-            card.className = 'app-card';
-            card.dataset.id = app.id;
-            
-            const realSrc = app.icon || CONFIG.defaultIcon;
-            
-            // 方格视图不显示类型徽章
-            card.innerHTML = `
-                <img class="app-icon" src="${realSrc}" 
-                     alt="${app.name}" 
-                     onerror="this.src='${CONFIG.defaultIcon}'">
-                <h3 class="app-name">${app.name}</h3>
-                <div class="app-meta">
-                    <p>${app.author || '匿名用户'}</p>
-                    ${app.category ? `<p>${app.category}</p>` : ''}
-                </div>
-            `;
-            
-            card.addEventListener('click', () => showAppDetail(app));
-            container.appendChild(card);
-        }
+        // 渲染应用卡片 - 修改：方格视图显示标签
+       // 渲染应用卡片 - 方格视图不显示标签
+function renderAppCard(app, container = null) {
+    if (!container) container = document.getElementById('app-grid-view');
+    
+    const card = document.createElement('div');
+    card.className = 'app-card';
+    card.dataset.id = app.id;
+    
+    const realSrc = app.icon || CONFIG.defaultIcon;
+    
+    card.innerHTML = `
+        <img class="app-icon" src="${realSrc}" 
+             alt="${app.name}" 
+             onerror="this.src='${CONFIG.defaultIcon}'">
+        <h3 class="app-name">${app.name}</h3>
+        <div class="app-meta">
+            <p>${app.author || '匿名用户'}</p>
+        </div>
+    `;
+    
+    card.addEventListener('click', () => showAppDetail(app));
+    container.appendChild(card);
+}
         
-        // 渲染列表项 - 列表视图仍然显示徽章
+        // 渲染列表项 - 列表视图显示所有标签
         function renderAppListItem(app, container) {
             const item = document.createElement('div');
             item.className = 'app-list-item';
@@ -1596,8 +1722,11 @@
             
             const realSrc = app.icon || CONFIG.defaultIcon;
             
-            // 列表视图显示类型徽章
-            const typeBadge = app.type ? `<span class="type-badge type-${app.type.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '')}" style="margin-left: 8px;">${app.type}</span>` : '';
+            // 生成标签HTML
+            const tagsHTML = app.tags && app.tags.length > 0 ? 
+                `<div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                    ${app.tags.map(tag => `<span class="tag-badge tag-${tag.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '')}">${tag}</span>`).join('')}
+                </div>` : '';
             
             item.innerHTML = `
                 <img class="app-icon" src="${realSrc}" 
@@ -1606,17 +1735,15 @@
                 <div class="app-info">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                         <h3 class="app-name">${app.name}</h3>
-                        <span style="background: #f5f0ff; color: #5856d6; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
-                            ${app.category || '未分类'}
-                        </span>
-                        ${typeBadge}
+                        ${app.premium ? `<span style="background: linear-gradient(135deg, #ff9500, #ff5e3a); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">付费</span>` : ''}
                     </div>
                     <div class="app-meta">
                         <span>作者: ${app.author || '匿名用户'}</span>
                         <span>版本: ${app.version || '1.0.0'}</span>
                         ${app.device ? `<span style="color: #34c759;">📱 ${app.device}</span>` : ''}
                     </div>
-                    <p style="color: #515154; font-size: 14px; margin-top: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    ${tagsHTML}
+                    <p style="color: #515154; font-size: 14px; margin-top: 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                         ${app.description || '暂无描述'}
                     </p>
                 </div>
@@ -1640,6 +1767,12 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 }) : '未知';
+            
+            // 生成标签HTML
+            const tagsHTML = app.tags && app.tags.length > 0 ? 
+                `<div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0;">
+                    ${app.tags.map(tag => `<span class="tag-badge tag-${tag.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '')}">${tag}</span>`).join('')}
+                </div>` : '';
             
             // 根据是否付费显示不同的按钮
             let actionButton = '';
@@ -1672,6 +1805,11 @@
                     ${app.description || '暂无描述'}
                 </div>
                 
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: #86868b; font-size: 14px; margin-bottom: 8px;">标签</h4>
+                    ${tagsHTML}
+                </div>
+                
                 <div class="detail-panel" id="detail-data-panel">
                     <div class="detail-item">
                         <span class="detail-label">付费类型</span>
@@ -1681,24 +1819,12 @@
                         </span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">类型</span>
-                        <span class="detail-value">
-                            <span class="type-badge type-${app.type ? app.type.replace(/[^a-zA-Z\u4e00-\u9fa5]/g, '') : '原创'}">
-                                ${app.type || '原创'}
-                            </span>
-                        </span>
-                    </div>
-                    <div class="detail-item">
                         <span class="detail-label">包名</span>
                         <span class="detail-value">${app.package || '未提供'}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">适配机型</span>
                         <span class="detail-value">${app.device || '通用机型'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">表盘分区</span>
-                        <span class="detail-value">${app.category || '未分类'}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">更新时间</span>
@@ -1836,7 +1962,7 @@
                 const searchTerm = searchInput ? searchInput.value.trim() : '';
                 
                 let message = '暂无表盘数据';
-                if (searchTerm || currentCategory !== 'all' || currentType !== 'all') {
+                if (searchTerm || currentCategory !== 'all') {
                     message = '没有找到符合条件的表盘，请尝试调整筛选条件';
                 }
                 
