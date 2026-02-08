@@ -143,6 +143,15 @@
             background-color: #e88500;
         }
         
+        .btn-danger {
+            background-color: #ff3b30;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d70015;
+        }
+        
         .watchface-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -600,6 +609,20 @@
         .form-section {
             padding: 12px;
         }
+        
+        .icon-preview-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .icon-preview-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .icon-preview-actions .btn {
+            width: 100%;
+        }
     }
     
     /* 针对小屏幕的额外优化 */
@@ -654,6 +677,72 @@
     select {
         min-height: 44px;
         min-width: 44px;
+    }
+    
+    /* 图标预览和操作区域 */
+    .icon-preview-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .icon-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        object-fit: cover;
+        border: 2px solid #e5e5ea;
+    }
+    
+    .icon-preview-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    /* 文件上传区域 */
+    .file-upload-area {
+        border: 2px dashed #d2d2d7;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .file-upload-area:hover {
+        border-color: #007aff;
+        background: rgba(0, 122, 255, 0.05);
+    }
+    
+    .file-upload-area.dragover {
+        border-color: #34c759;
+        background: rgba(52, 199, 89, 0.05);
+    }
+    
+    .file-upload-hint {
+        color: #86868b;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    
+    /* 链接输入区域 */
+    .link-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .link-input {
+        flex: 1;
+    }
+    
+    /* 隐藏的文件输入 */
+    .file-input-hidden {
+        display: none;
     }
     </style>
 </head>
@@ -755,37 +844,32 @@
     </div>
 
     <script>
-        
-// 检测移动设备并调整UI
-function adjustForMobile() {
-    const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent);
-    const isPortrait = window.innerHeight > window.innerWidth;
-    
-    if (isMobile && isPortrait) {
-        // 添加移动设备特定的类
-        document.body.classList.add('mobile-device', 'portrait-mode');
-        
-        // 调整字体大小
-        document.documentElement.style.fontSize = '14px';
-        
-        // 如果是index.html，调整每页显示数量
-        if (typeof itemsPerPage !== 'undefined') {
-            itemsPerPage = 12; // 手机竖屏减少每页显示数量
+        // 检测移动设备并调整UI
+        function adjustForMobile() {
+            const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent);
+            const isPortrait = window.innerHeight > window.innerWidth;
+            
+            if (isMobile && isPortrait) {
+                // 添加移动设备特定的类
+                document.body.classList.add('mobile-device', 'portrait-mode');
+                
+                // 调整字体大小
+                document.documentElement.style.fontSize = '14px';
+                
+                // 如果是index.html，调整每页显示数量
+                if (typeof itemsPerPage !== 'undefined') {
+                    itemsPerPage = 12; // 手机竖屏减少每页显示数量
+                }
+            }
         }
-    }
-}
 
-// 在 DOMContentLoaded 事件中调用
-document.addEventListener('DOMContentLoaded', () => {
-    adjustForMobile();
-    // 其他初始化代码...
-});
         // 全局变量
         let watchfaceData = [];
         let currentMode = 'visual';
         
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
+            adjustForMobile();
             loadData();
             initRPKDropZone();
         });
@@ -868,6 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "description": "这是一个示例表盘",
                     "author": "示例作者",
                     "icon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg==",
+                    "link": "https://example.com/watchfacerpk/example.rpk",
                     "tags": ["数字时显", "原创"],
                     "device": "通用机型",
                     "features": ["时间显示", "日期显示"],
@@ -974,6 +1059,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div class="form-section">
+                        <div class="section-title">下载链接</div>
+                        <div class="form-group">
+                            <label class="form-label">表盘下载链接 *</label>
+                            <div class="link-input-group">
+                                <input type="text" class="form-input link-input" 
+                                       id="link-input-${index}"
+                                       value="${watchface.link || ''}" 
+                                       onchange="updateField(${index}, 'link', this.value)"
+                                       placeholder="输入RPK文件下载链接，例如: https://example.com/watchfacerpk/digital_1.0.0.rpk">
+                                <button class="btn btn-outline" onclick="testLink(${index})" style="white-space: nowrap;">
+                                    测试链接
+                                </button>
+                            </div>
+                            <div class="file-upload-hint">
+                                提示：链接应指向RPK文件，支持HTTP/HTTPS链接
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
                         <div class="section-title">标签管理</div>
                         <div class="tags-container" id="tags-${index}">
                             ${tagsHTML}
@@ -1052,17 +1157,42 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     
                     <div class="form-section">
-                        <div class="section-title">图标链接</div>
+                        <div class="section-title">图标管理</div>
                         <div class="form-group">
+                            <label class="form-label">图标链接或base64数据</label>
                             <input type="text" class="form-input" 
+                                   id="icon-input-${index}"
                                    value="${watchface.icon || ''}" 
-                                   onchange="updateField(${index}, 'icon', this.value)"
+                                   onchange="updateIconField(${index}, this.value)"
                                    placeholder="输入图标URL或base64数据">
                         </div>
+                        
+                        <div class="file-upload-area" id="icon-drop-zone-${index}" 
+                             onclick="document.getElementById('icon-file-input-${index}').click()"
+                             ondragover="handleDragOver(event, ${index})"
+                             ondragleave="handleDragLeave(event, ${index})"
+                             ondrop="handleIconDrop(event, ${index})">
+                            <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
+                            <div>点击或拖拽图片文件到这里上传</div>
+                            <div class="file-upload-hint">支持 PNG、JPG、SVG 格式，最大 2MB</div>
+                        </div>
+                        
+                        <input type="file" id="icon-file-input-${index}" class="file-input-hidden" 
+                               accept=".png,.jpg,.jpeg,.svg,image/*" 
+                               onchange="handleIconUpload(event, ${index})">
+                        
                         ${watchface.icon ? `
-                        <div style="margin-top: 10px;">
-                            <label class="form-label">图标预览</label>
-                            <img src="${watchface.icon}" alt="图标预览" style="width: 60px; height: 60px; border-radius: 12px; margin-top: 5px;">
+                        <div class="icon-preview-container" id="icon-preview-${index}">
+                            <img src="${watchface.icon}" alt="图标预览" class="icon-preview" 
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='">
+                            <div class="icon-preview-actions">
+                                <button class="btn btn-danger" onclick="removeIcon(${index})">
+                                    删除图标
+                                </button>
+                                <button class="btn btn-outline" onclick="copyIconBase64(${index})">
+                                    复制base64
+                                </button>
+                            </div>
                         </div>
                         ` : ''}
                     </div>
@@ -1102,6 +1232,82 @@ document.addEventListener('DOMContentLoaded', () => {
                 watchfaceData[index][field] = value;
                 showMessage('字段已更新', 'info');
             }
+        }
+        
+        // 更新图标字段
+        function updateIconField(index, value) {
+            if (watchfaceData[index]) {
+                watchfaceData[index].icon = value;
+                // 更新预览
+                const previewContainer = document.getElementById(`icon-preview-${index}`);
+                if (value) {
+                    if (!previewContainer) {
+                        const iconSection = document.querySelector(`#form-${index} .form-section:nth-last-child(1)`);
+                        const previewHTML = `
+                            <div class="icon-preview-container" id="icon-preview-${index}">
+                                <img src="${value}" alt="图标预览" class="icon-preview"
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='">
+                                <div class="icon-preview-actions">
+                                    <button class="btn btn-danger" onclick="removeIcon(${index})">
+                                        删除图标
+                                    </button>
+                                    <button class="btn btn-outline" onclick="copyIconBase64(${index})">
+                                        复制base64
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        iconSection.insertAdjacentHTML('beforeend', previewHTML);
+                    } else {
+                        const img = previewContainer.querySelector('.icon-preview');
+                        if (img) img.src = value;
+                    }
+                } else if (previewContainer) {
+                    previewContainer.remove();
+                }
+                showMessage('图标已更新', 'info');
+            }
+        }
+        
+        // 测试链接
+        function testLink(index) {
+            const linkInput = document.getElementById(`link-input-${index}`);
+            const link = linkInput.value;
+            
+            if (!link) {
+                showMessage('请输入链接', 'warning');
+                return;
+            }
+            
+            if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                showMessage('链接格式不正确，应以 http:// 或 https:// 开头', 'warning');
+                return;
+            }
+            
+            showMessage('正在测试链接...', 'info');
+            
+            // 创建一个隐藏的iframe来测试链接
+            const testFrame = document.createElement('iframe');
+            testFrame.style.display = 'none';
+            testFrame.src = link;
+            testFrame.onload = function() {
+                showMessage('链接测试成功', 'success');
+                document.body.removeChild(testFrame);
+            };
+            testFrame.onerror = function() {
+                showMessage('链接测试失败，可能文件不存在或无法访问', 'error');
+                document.body.removeChild(testFrame);
+            };
+            
+            document.body.appendChild(testFrame);
+            
+            // 设置超时
+            setTimeout(() => {
+                if (document.body.contains(testFrame)) {
+                    showMessage('链接测试超时', 'warning');
+                    document.body.removeChild(testFrame);
+                }
+            }, 10000);
         }
         
         // 添加标签
@@ -1198,6 +1404,137 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // 处理图片上传
+        function handleIconUpload(event, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 检查文件类型
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+            if (!validTypes.includes(file.type)) {
+                showMessage('请上传PNG、JPG或SVG格式的图片', 'error');
+                return;
+            }
+            
+            // 检查文件大小（2MB限制）
+            if (file.size > 2 * 1024 * 1024) {
+                showMessage('图片大小不能超过2MB', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // 获取base64数据
+                const base64Data = e.target.result;
+                // 更新图标字段
+                updateIconField(index, base64Data);
+                // 更新输入框
+                document.getElementById(`icon-input-${index}`).value = base64Data;
+                showMessage('图片上传成功并转换为base64格式', 'success');
+            };
+            reader.onerror = function() {
+                showMessage('图片读取失败', 'error');
+            };
+            reader.readAsDataURL(file);
+            
+            // 重置文件输入
+            event.target.value = '';
+        }
+        
+        // 处理拖放事件
+        function handleDragOver(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropZone = document.getElementById(`icon-drop-zone-${index}`);
+            dropZone.classList.add('dragover');
+        }
+        
+        function handleDragLeave(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            const dropZone = document.getElementById(`icon-drop-zone-${index}`);
+            dropZone.classList.remove('dragover');
+        }
+        
+        function handleIconDrop(event, index) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const dropZone = document.getElementById(`icon-drop-zone-${index}`);
+            dropZone.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                // 模拟文件输入事件
+                const fileInput = document.getElementById(`icon-file-input-${index}`);
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(files[0]);
+                fileInput.files = dataTransfer.files;
+                
+                // 触发change事件
+                const changeEvent = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(changeEvent);
+            }
+        }
+        
+        // 删除图标
+        function removeIcon(index) {
+            if (confirm('确定要删除这个图标吗？')) {
+                watchfaceData[index].icon = '';
+                // 更新输入框
+                document.getElementById(`icon-input-${index}`).value = '';
+                // 移除预览
+                const previewContainer = document.getElementById(`icon-preview-${index}`);
+                if (previewContainer) {
+                    previewContainer.remove();
+                }
+                showMessage('图标已删除', 'success');
+            }
+        }
+        
+        // 复制图标base64
+        function copyIconBase64(index) {
+            const icon = watchfaceData[index].icon;
+            if (!icon) {
+                showMessage('没有可复制的图标数据', 'warning');
+                return;
+            }
+            
+            // 提取纯base64数据（去掉data:image/...;base64,前缀）
+            let base64Data = icon;
+            if (icon.startsWith('data:')) {
+                const commaIndex = icon.indexOf(',');
+                if (commaIndex !== -1) {
+                    base64Data = icon.substring(commaIndex + 1);
+                }
+            }
+            
+            try {
+                navigator.clipboard.writeText(base64Data)
+                    .then(() => {
+                        showMessage('Base64数据已复制到剪贴板', 'success');
+                    })
+                    .catch(err => {
+                        // 降级方案
+                        const textArea = document.createElement('textarea');
+                        textArea.value = base64Data;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        showMessage('Base64数据已复制到剪贴板', 'success');
+                    });
+            } catch (err) {
+                const textArea = document.createElement('textarea');
+                textArea.value = base64Data;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showMessage('Base64数据已复制到剪贴板', 'success');
+            }
+        }
+        
         // 添加新表盘
         function addNewWatchface() {
             const newId = 'watchface_' + Date.now();
@@ -1209,6 +1546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: "",
                 author: "",
                 icon: "",
+                link: "",
                 tags: ["原创"],
                 device: "vivo/iQOO watch GT1/2",
                 features: [],
@@ -1269,134 +1607,138 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('json-import-input').click();
         }
         
-       
- function handleJsonImport(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            let jsonString = e.target.result;
+        function handleJsonImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
             
-            // 1. 移除BOM字符
-            jsonString = jsonString.replace(/^\uFEFF/, '');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let jsonString = e.target.result;
+                    
+                    // 1. 移除BOM字符
+                    jsonString = jsonString.replace(/^\uFEFF/, '');
+                    
+                    // 2. 尝试直接解析（如果已经是有效JSON）
+                    try {
+                        const jsonData = JSON.parse(jsonString);
+                        processImportData(jsonData);
+                        return;
+                    } catch (firstError) {
+                        console.log('第一次解析失败，尝试修复...');
+                    }
+                    
+                    // 3. 清理和修复常见的JSON问题
+                    jsonString = cleanJsonString(jsonString);
+                    
+                    // 4. 再次尝试解析
+                    try {
+                        const jsonData = JSON.parse(jsonString);
+                        processImportData(jsonData);
+                    } catch (secondError) {
+                        console.error('修复后仍然失败:', secondError);
+                        showMessage('JSON导入失败！请确保文件格式正确：\n1. 使用有效的JSON格式\n2. 确保所有字符串用双引号包裹\n3. 移除所有JavaScript注释', 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('文件读取失败:', error);
+                    showMessage('文件读取失败: ' + error.message, 'error');
+                }
+            };
             
-            // 2. 尝试直接解析（如果已经是有效JSON）
-            try {
-                const jsonData = JSON.parse(jsonString);
-                processImportData(jsonData);
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        // JSON清理函数
+        function cleanJsonString(jsonString) {
+            return jsonString
+                // 移除行注释
+                .replace(/\/\/.*$/gm, '')
+                // 移除块注释
+                .replace(/\/\*[\s\S]*?\*\//g, '')
+                // 修复未闭合的字符串
+                .replace(/:\s*"([^"]*?)(?=\s*[,\]}])/g, ':"$1"')
+                // 修复未加引号的属性名
+                .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+                // 移除控制字符（除了\t, \n, \r）
+                .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+                // 修复尾随逗号
+                .replace(/,(\s*[}\]])/g, '$1')
+                // 标准化换行符
+                .replace(/\r\n|\r/g, '\n')
+                // 确保JSON以正确结构开始和结束
+                .replace(/^\s*([\s\S]*?)\s*$/, '$1');
+        }
+        
+        // 处理导入的数据
+        function processImportData(jsonData) {
+            // 兼容不同格式的数据
+            if (Array.isArray(jsonData)) {
+                watchfaceData = jsonData;
+            } else if (jsonData.watchfaces && Array.isArray(jsonData.watchfaces)) {
+                watchfaceData = jsonData.watchfaces;
+            } else if (jsonData.meta && jsonData.watchfaces) {
+                watchfaceData = jsonData.watchfaces;
+            } else {
+                showMessage('无法识别的JSON格式', 'warning');
                 return;
-            } catch (firstError) {
-                console.log('第一次解析失败，尝试修复...');
             }
             
-            // 3. 清理和修复常见的JSON问题
-            jsonString = cleanJsonString(jsonString);
-            
-            // 4. 再次尝试解析
-            try {
-                const jsonData = JSON.parse(jsonString);
-                processImportData(jsonData);
-            } catch (secondError) {
-                console.error('修复后仍然失败:', secondError);
-                showMessage('JSON导入失败！请确保文件格式正确：\n1. 使用有效的JSON格式\n2. 确保所有字符串用双引号包裹\n3. 移除所有JavaScript注释', 'error');
-            }
-            
-        } catch (error) {
-            console.error('文件读取失败:', error);
-            showMessage('文件读取失败: ' + error.message, 'error');
-        }
-    };
-    
-    reader.readAsText(file, 'UTF-8');
-}
-
-// JSON清理函数
-function cleanJsonString(jsonString) {
-    return jsonString
-        // 移除行注释
-        .replace(/\/\/.*$/gm, '')
-        // 移除块注释
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        // 修复未闭合的字符串
-        .replace(/:\s*"([^"]*?)(?=\s*[,\]}])/g, ':"$1"')
-        // 修复未加引号的属性名
-        .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
-        // 移除控制字符（除了\t, \n, \r）
-        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
-        // 修复尾随逗号
-        .replace(/,(\s*[}\]])/g, '$1')
-        // 标准化换行符
-        .replace(/\r\n|\r/g, '\n')
-        // 确保JSON以正确结构开始和结束
-        .replace(/^\s*([\s\S]*?)\s*$/, '$1');
-}
-
-// 处理导入的数据
-function processImportData(jsonData) {
-    // 兼容不同格式的数据
-    if (Array.isArray(jsonData)) {
-        watchfaceData = jsonData;
-    } else if (jsonData.watchfaces && Array.isArray(jsonData.watchfaces)) {
-        watchfaceData = jsonData.watchfaces;
-    } else if (jsonData.meta && jsonData.watchfaces) {
-        watchfaceData = jsonData.watchfaces;
-    } else {
-        showMessage('无法识别的JSON格式', 'warning');
-        return;
-    }
-    
-    // 验证和清理数据
-    watchfaceData = watchfaceData.filter(item => {
-        // 确保每个表盘有必要的字段
-        if (!item.name) {
-            console.warn('发现未命名表盘，已跳过:', item);
-            return false;
-        }
-        return true;
-    }).map(item => {
-        // 数据迁移：如果旧数据有category或type字段，转换为tags字段
-        if (!item.tags || !Array.isArray(item.tags)) {
-            const tags = [];
-            
-            if (item.category) {
-                if (Array.isArray(item.category)) {
-                    tags.push(...item.category);
-                } else {
-                    tags.push(item.category);
+            // 验证和清理数据
+            watchfaceData = watchfaceData.filter(item => {
+                // 确保每个表盘有必要的字段
+                if (!item.name) {
+                    console.warn('发现未命名表盘，已跳过:', item);
+                    return false;
                 }
-            }
-            
-            if (item.type) {
-                if (Array.isArray(item.type)) {
-                    tags.push(...item.type);
-                } else {
-                    tags.push(item.type);
+                return true;
+            }).map(item => {
+                // 数据迁移：如果旧数据有category或type字段，转换为tags字段
+                if (!item.tags || !Array.isArray(item.tags)) {
+                    const tags = [];
+                    
+                    if (item.category) {
+                        if (Array.isArray(item.category)) {
+                            tags.push(...item.category);
+                        } else {
+                            tags.push(item.category);
+                        }
+                    }
+                    
+                    if (item.type) {
+                        if (Array.isArray(item.type)) {
+                            tags.push(...item.type);
+                        } else {
+                            tags.push(item.type);
+                        }
+                    }
+                    
+                    // 去重
+                    const uniqueTags = [...new Set(tags.filter(Boolean))];
+                    item.tags = uniqueTags.length > 0 ? uniqueTags : ['原创'];
                 }
-            }
+                
+                // 确保features是数组
+                if (!Array.isArray(item.features)) {
+                    item.features = [];
+                }
+                
+                // 确保device字段存在
+                if (!item.device) {
+                    item.device = '通用机型';
+                }
+                
+                // 确保link字段存在
+                if (!item.link) {
+                    item.link = '';
+                }
+                
+                return item;
+            });
             
-            // 去重
-            const uniqueTags = [...new Set(tags.filter(Boolean))];
-            item.tags = uniqueTags.length > 0 ? uniqueTags : ['原创'];
+            renderWatchfaceGrid();
+            showMessage(`成功导入 ${watchfaceData.length} 个表盘数据`, 'success');
         }
-        
-        // 确保features是数组
-        if (!Array.isArray(item.features)) {
-            item.features = [];
-        }
-        
-        // 确保device字段存在
-        if (!item.device) {
-            item.device = '通用机型';
-        }
-        
-        return item;
-    });
-    
-    renderWatchfaceGrid();
-    showMessage(`成功导入 ${watchfaceData.length} 个表盘数据`, 'success');
-}
         
         // 处理代码视图的JSON导入
         function importCodeJson(event) {
@@ -1575,6 +1917,7 @@ function processImportData(jsonData) {
                     description: "从RPK文件导入的表盘",
                     author: "未知作者",
                     icon: "",
+                    link: "",
                     tags: ["原创"],
                     device: "vivo/iQOO watch GT1/2",
                     features: ["RPK格式"],

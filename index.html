@@ -1068,7 +1068,7 @@
             <!-- 筛选工具栏（包含搜索和视图切换） -->
             <div class="filter-toolbar">
                 <div class="search-container">
-                    <input type="text" id="search-input" placeholder="搜索表盘...">
+<input type="search" id="search-input" placeholder="搜索表盘..." autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
                     <span class="search-icon">🔍</span>
                 </div>
                 
@@ -1241,6 +1241,11 @@
                 username: "123456",
                 password: "123456",
                 name: "测试账号"
+            },
+               {
+                username: "123456e",
+                password: "123456e",
+                name: "管理员测试账号"
             }
         ];
 
@@ -1364,6 +1369,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
             initializeEventListeners();
             await initData();
+            // 清空搜索框
+document.getElementById('search-input').value = '';
         });
 
         // 初始化数据 - 从 localStorage 读取数据或使用示例数据
@@ -2096,59 +2103,68 @@ function renderAppCard(app, container = null) {
         
         // ========== 登录功能 ==========
         
-        // 处理登录 - 验证多个管理员账号
-        function handleLogin() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-            const errorDiv = document.getElementById('login-error');
-            
-            // 清除错误消息
-            errorDiv.style.display = 'none';
-            errorDiv.textContent = '';
-            
-            // 验证输入
-            if (!username || !password) {
-                errorDiv.textContent = '请输入账户和密码';
-                errorDiv.style.display = 'block';
-                showToast('请输入账户和密码', 'warning');
-                return;
-            }
-            
-            // 查找匹配的管理员账号
-            const matchedAccount = ADMIN_ACCOUNTS.find(account => 
-                account.username === username && account.password === password
-            );
-            
-            if (matchedAccount) {
-                // 登录成功
-                showToast(`欢迎，${matchedAccount.name}！登录成功`, 'success');
-                
-                // 将当前数据保存到 localStorage，供 admin.html 使用
-                const dataToSave = {
-                    meta: {
-                        version: "2.0",
-                        save_date: new Date().toISOString(),
-                        count: appsData.length,
-                        note: "从首页导出",
-                        login_user: matchedAccount.name
-                    },
-                    watchfaces: appsData
-                };
-                localStorage.setItem('watchface_data', JSON.stringify(dataToSave));
-                
-                // 设置登录状态标记
-                localStorage.setItem('watchface_admin_logged_in', 'true');
-                localStorage.setItem('watchface_admin_user', matchedAccount.name);
-                
-                // 跳转到管理员页面
-                window.location.href = 'https://czx666d.github.io/rpk-store-watchface/admin.html';
-            } else {
-                // 登录失败
-                errorDiv.textContent = '账户或密码错误，请检查后重试';
-                errorDiv.style.display = 'block';
-                showToast('登录失败，请检查账户密码', 'error');
-            }
+      // ========== 登录功能 ==========
+
+// 处理登录 - 验证多个管理员账号
+function handleLogin() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+    
+    // 清除错误消息
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // 验证输入
+    if (!username || !password) {
+        errorDiv.textContent = '请输入账户和密码';
+        errorDiv.style.display = 'block';
+        showToast('请输入账户和密码', 'warning');
+        return;
+    }
+    
+    // 查找匹配的管理员账号
+    const matchedAccount = ADMIN_ACCOUNTS.find(account => 
+        account.username === username && account.password === password
+    );
+    
+    if (matchedAccount) {
+        // 登录成功
+        showToast(`欢迎，${matchedAccount.name}！登录成功`, 'success');
+        
+        // 将当前数据保存到 localStorage，供 admin.html 使用
+        const dataToSave = {
+            meta: {
+                version: "2.0",
+                save_date: new Date().toISOString(),
+                count: appsData.length,
+                note: "从首页导出",
+                login_user: matchedAccount.name
+            },
+            watchfaces: appsData
+        };
+        localStorage.setItem('watchface_data', JSON.stringify(dataToSave));
+        
+        // 设置登录状态标记
+        localStorage.setItem('watchface_admin_logged_in', 'true');
+        localStorage.setItem('watchface_admin_user', matchedAccount.name);
+        
+        // 判断是否为测试账号，如果是则跳转到本地admin.html
+        if (username === '123456e') {
+            // 管理员测试账号：跳转到本地目录下的admin.html
+            window.location.href = 'admin.html';
+        } else {
+            // 其他管理员账号：跳转到GitHub Pages上的admin.html
+            window.location.href = 'https://czx666d.github.io/rpk-store-watchface/admin.html';
         }
+    } else {
+        // 登录失败
+        errorDiv.textContent = '账户或密码错误，请检查后重试';
+        errorDiv.style.display = 'block';
+        showToast('登录失败，请检查账户密码', 'error');
+    }
+}
+        
     </script>
 </body>
 </html>
