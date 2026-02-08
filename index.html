@@ -196,13 +196,72 @@
     .pagination {
         flex-wrap: wrap;
         gap: 8px;
+        justify-content: center;
     }
     
+      /* 修正：确保分页按钮正确排列 */
     .page-numbers {
-        order: 3;
-        width: 100%;
+        display: flex;
+        gap: 5px;
+        margin: 0 10px;
+        flex-wrap: nowrap;
+        order: 0;
+        width: auto;
+  
+    }
+    
+    /* 修改：分页按钮去掉悬停效果 */
+    .page-btn {
+        background: white;
+        border: 1px solid #d2d2d7;
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
         justify-content: center;
-        margin-top: 10px;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #f5f5f7;
+    }
+    
+    /* 移除按钮悬停效果 */
+    .page-btn:hover:not(:disabled) {
+        background-color: white;
+        border-color: #d2d2d7;
+    }
+    
+    /* 修改分页数字按钮样式 */
+    .page-number {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius:8px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        background-color: white;
+        border: 1px solid transparent;
+    }
+    
+    .page-number:hover:not(.active) {
+        background-color: #f5f5f7;
+        border-color: #d2d2d7;
+    }
+    
+    .page-number.active {
+        background-color: #007aff;
+        color: white;
+        border-color: #007aff;
     }
         * {
             margin: 0;
@@ -457,7 +516,7 @@
             width: 100%;
         }
         
-        /* 分页样式 */
+        /* 分页样式 - 已修改 */
         .pagination {
             display: flex;
             justify-content: center;
@@ -465,52 +524,6 @@
             gap: 10px;
             margin-top: 30px;
             flex-wrap: wrap;
-        }
-        
-        .page-btn {
-            background: white;
-            border: 1px solid #d2d2d7;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .page-btn:hover:not(:disabled) {
-            background-color: #f5f5f7;
-            border-color: #86868b;
-        }
-        
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .page-numbers {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .page-number {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            transition: all 0.2s ease;
-        }
-        
-        .page-number:hover:not(.active) {
-            background-color: #f5f5f7;
-        }
-        
-        .page-number.active {
-            background-color: #007aff;
-            color: white;
         }
         
         /* 应用详情弹窗 - 缩小版 */
@@ -1037,6 +1050,30 @@
                 flex-wrap: wrap;
                 justify-content: center;
             }
+            
+            /* 移动端分页调整 */
+            .pagination {
+                gap: 6px;
+            }
+            
+            .page-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .page-number {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            
+            /* 移动端分页布局调整 */
+            .page-numbers {
+                order: 0; /* 重置order值 */
+                width: auto;
+                margin-top: 0;
+            }
         }
         
         @media (max-width: 480px) {
@@ -1052,6 +1089,23 @@
             .app-icon {
                 width: 50px;
                 height: 50px;
+            }
+            
+            /* 超小屏幕分页调整 */
+            .pagination {
+                gap: 4px;
+            }
+            
+            .page-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            
+            .page-number {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
             }
         }
     </style>
@@ -1126,11 +1180,13 @@
                 </div>
             </div>
 
-            <!-- 分页控件 -->
+            <!-- 分页控件 - 已修改 -->
             <div class="pagination" id="pagination">
-                <button class="page-btn" id="prev-page">上一页</button>
+                <button class="page-btn" id="first-page" title="首页">⏮</button>
+                <button class="page-btn" id="prev-page" title="上一页">◀</button>
                 <div class="page-numbers" id="page-numbers"></div>
-                <button class="page-btn" id="next-page">下一页</button>
+                <button class="page-btn" id="next-page" title="下一页">▶</button>
+                <button class="page-btn" id="last-page" title="末页">⏭</button>
             </div>
         </div>
         
@@ -1298,7 +1354,7 @@
 
         // 配置
         const CONFIG = {
-            defaultIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIHJ4PSIyMCIgZmlsbD0iI2Y1ZjVmNyIvPjxwYXRoIGQ9Ik00MCAzMUM0NS41MjI4IDMxIDUwIDM1LjQ3NzIgNTAgNDFDNTAgNDYuNTIyOCA0NS41MjI4IDUxIDQwIDUxQzM0LjQ3NzIgNTEgMzAgNDYuNTIyOCAzMCA0MUMzMCAzNS40NzcyIDM0LjQ3NzIgMzEgNDAgMzFaTTQ3IDM2LjVDNDcgMzUuNjcxNiA0Ni4zMjg4IDM1IDQ1LjUgMzVDNDQuNjcxMiAzNSA0NCAzNS42NzE2IDQ0IDM2LjVDNDQgMzcuMzI4NCA0NC42NzEyIDM4IDQ1LjUgMzhDNDYuMzI4OCAzOCA0NyAzNy4zMjg0IDQ3IDM2LjVaTTMzIDM2LjVDMzMgMzUuNjcxNiAzMi4zMjg4IDM1IDMxLjUgMzVDMzAuNjcxMiAzNSAzMCAzNS42NzE2IDMwIDM2LjVDMzAgMzcuMzI4NCAzMC42NzEyIDM4IDMxLjUgMzhDMzIuMzI4OCAzOCAzMyAzNy4zMjg0IDMzIDM2LjVaTTM1LjUgNTFDMzUuNSA1MS44Mjg0IDM2LjE3MTYgNTIuNSAzNyA1Mi41SDQzQzQzLjgyODQgNTIuNSA0NC41IDUxLjgyODQgNDQuNSA1MUM0NC41IDUwLjE3MTYgNDMuODI4NCA0OS41IDQzIDQ5LjVIMzdDMzYuMTcxNiA0OS41IDM1LjUgNTAuMTcxNiAzNS41IDUxWiIgZmlsbD0iI2I4YjhiOCIvPjwvc3ZnPg=='
+            defaultIcon: ''
         };
 
         // 示例表盘数据 - 修改：使用tags字段替代category和type
@@ -1587,7 +1643,15 @@ document.getElementById('search-input').value = '';
                 showToast('筛选条件已重置', 'success');
             });
             
-            // 分页按钮
+            // 分页按钮 - 新增首页和末页按钮事件
+            document.getElementById('first-page')?.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage = 1;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
             document.getElementById('prev-page')?.addEventListener('click', () => {
                 if (currentPage > 1) {
                     currentPage--;
@@ -1600,6 +1664,15 @@ document.getElementById('search-input').value = '';
                 const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
                 if (currentPage < totalPages) {
                     currentPage++;
+                    renderApps();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            document.getElementById('last-page')?.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage = totalPages;
                     renderApps();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -1995,8 +2068,10 @@ function renderAppCard(app, container = null) {
         function updatePagination() {
             const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
             const pageNumbers = document.getElementById('page-numbers');
+            const firstBtn = document.getElementById('first-page');
             const prevBtn = document.getElementById('prev-page');
             const nextBtn = document.getElementById('next-page');
+            const lastBtn = document.getElementById('last-page');
             const pagination = document.getElementById('pagination');
             
             if (!pagination) return;
@@ -2008,8 +2083,11 @@ function renderAppCard(app, container = null) {
             
             pagination.style.display = 'flex';
             
+            // 设置按钮禁用状态
+            if (firstBtn) firstBtn.disabled = currentPage === 1;
             if (prevBtn) prevBtn.disabled = currentPage === 1;
             if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+            if (lastBtn) lastBtn.disabled = currentPage === totalPages;
             
             if (pageNumbers) {
                 pageNumbers.innerHTML = '';
